@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="app_bar_height">200dp</dimen>
+    <dimen name="item_width">200dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="text_margin_half">4dp</dimen>
+    <dimen name="text_size_widget">15sp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+
+    <dimen name="baking_widget_margin">8dp</dimen>
+    <dimen name="baking_widget_minWidth">300dp</dimen>
+    <dimen name="baking_widget_minHeight">180dp</dimen>
+    <dimen name="baking_widget_minResizeHeight">300dp</dimen>
+    <dimen name="baking_widget_minResizeWidth">200dp</dimen>
+    <dimen name="baking_widget_icon_dimension">100dp</dimen>
+    <dimen name="step_item_min_height">72dp</dimen>
+
+
+</resources>
