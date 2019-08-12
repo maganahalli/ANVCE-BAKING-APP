@@ -22,15 +22,11 @@ import java.util.Random;
  */
 public class BaseRecipesFacade implements BakingAppConstants, RecipesFacade {
 
-    private static final String TAG = BaseRecipesFacade.class.getSimpleName();
-
-    private static final Random RANDOM_GENERATOR = new Random();
-    private final Context context;
-    private AppDatabase recipeDataBase;
+   private static final Random RANDOM_GENERATOR = new Random();
+    private final AppDatabase recipeDataBase;
     private DbRecipe recipe;
 
     public BaseRecipesFacade(Context context) {
-        this.context = context;
         recipeDataBase = AppDatabase.getInstance(context);
     }
 
@@ -41,11 +37,7 @@ public class BaseRecipesFacade implements BakingAppConstants, RecipesFacade {
 
     @Override
     public DbRecipe loadRecipe(int mRecipeId) {
-        AppExecutors.getInstance().diskIO().execute(() -> {
-            final DbRecipe retrievedRecipe = recipeDataBase.receipeDao().retrieveRecipeById(mRecipeId);
-            recipe = retrievedRecipe;
-
-        });
+        AppExecutors.getInstance().diskIO().execute(() -> recipe = recipeDataBase.receipeDao().retrieveRecipeById(mRecipeId));
 
         return recipe;
 
@@ -61,12 +53,5 @@ public class BaseRecipesFacade implements BakingAppConstants, RecipesFacade {
         });
         return recipes;
 
-    }
-
-    @Override
-    public List<Ingredient> getIngredients(@NonNull DbRecipe recipe) {
-        assert recipe.getIngredientsListAsString() != null;
-        final List<Ingredient> ingredientList = new RecipeCustomDataConverter().toIngredientList(recipe.getIngredientsListAsString());
-        return ingredientList;
     }
 }

@@ -13,6 +13,4 @@ public interface RecipesFacade {
     DbRecipe loadRecipe(int mRecipeId);
 
     List<DbRecipe> fetchAllRecipes();
-
-    List<Ingredient> getIngredients(DbRecipe recipe);
 }

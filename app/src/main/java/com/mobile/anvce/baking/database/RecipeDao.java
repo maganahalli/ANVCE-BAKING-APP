@@ -50,6 +50,4 @@ public abstract interface RecipeDao {
 
     @Query("SELECT * FROM INGREDIENT WHERE recipeId=:recipeId ")
     List<DbIngredient> retrieveIngredientByRecipeId(int recipeId);
-
-
 }

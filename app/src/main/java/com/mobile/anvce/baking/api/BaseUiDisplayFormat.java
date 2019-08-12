@@ -25,20 +25,10 @@ public class BaseUiDisplayFormat implements BakingAppConstants, UiDisplayFormat 
 
     @Override
     public String formatIngredientForDisplay(@NonNull final Ingredient ingredient) {
-        StringBuilder stringBuffer = new StringBuilder(String.format("%s ", formatQuantity(ingredient.getQuantity())));
-        stringBuffer.append(formatMeasure(ingredient.getMeasure()));
-        stringBuffer.append(ingredient.getIngredient());
-        return stringBuffer.toString();
+        return String.format("%s ", formatQuantity(ingredient.getQuantity())) + formatMeasure(ingredient.getMeasure()) +
+                ingredient.getIngredient();
     }
 
-    @Override
-    public String formatIngredientForDisplay(@NonNull DbIngredient dbIngredient) {
-        StringBuilder stringBuffer = new StringBuilder(String.format("%s ", formatQuantity(dbIngredient.getQuantity())));
-        stringBuffer.append(formatMeasure(dbIngredient.getMeasure()));
-        stringBuffer.append(dbIngredient.getIngredient());
-        return stringBuffer.toString();
-
-    }
 
     private String formatMeasure(@NonNull final String measure) {
         return "UNIT".equalsIgnoreCase(measure) ? "" : String.format("%s ", measure.toLowerCase(Locale.US));

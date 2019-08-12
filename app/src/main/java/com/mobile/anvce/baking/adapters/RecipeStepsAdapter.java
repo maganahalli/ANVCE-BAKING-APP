@@ -56,6 +56,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<StepViewHolder> {
         Glide.with(holder.getContext()).load(step.getThumbnailURL()).listener(new RequestListener<Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                assert e != null;
                 Log.e(getClass().getSimpleName(),
                         String.format("failed to load url: %s with exception %s", step.getThumbnailURL(), e.getMessage()), e);
                 return false;

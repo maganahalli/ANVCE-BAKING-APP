@@ -27,7 +27,6 @@ import javax.inject.Inject;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeViewHolder> implements BakingAppConstants {
 
-    private final static String TAG = RecipeAdapter.class.getSimpleName();
     private final List<Recipe> list;
     private final Context context;
     private final RequestOptions requestOptions = new RequestOptions().override(300, 300);
@@ -61,14 +60,11 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeViewHolder> implem
                 .load(imageUrlString)
                 .apply(requestOptions)
                 .into(holder.getRecipeImageView());
-        holder.getCardView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(context, IngredientsListActivity.class);
-                intent.putExtra(BakingAppConstants.RECIPE_ID, recipe.getId());
-                intent.putExtra(BakingAppConstants.RECIPE, recipe);
-                context.startActivity(intent);
-            }
+        holder.getCardView().setOnClickListener(view -> {
+            Intent intent = new Intent(context, IngredientsListActivity.class);
+            intent.putExtra(BakingAppConstants.RECIPE_ID, recipe.getId());
+            intent.putExtra(BakingAppConstants.RECIPE, recipe);
+            context.startActivity(intent);
         });
 
     }

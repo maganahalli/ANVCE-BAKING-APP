@@ -12,7 +12,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.models.Recipe;
 
 import java.util.Objects;
 

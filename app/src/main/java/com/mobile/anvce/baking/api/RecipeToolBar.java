@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.models.Recipe;
 
 /**
  * Interface for Tool Bar display

@@ -13,10 +13,6 @@ import com.mobile.anvce.baking.models.Ingredient;
 public interface UiDisplayFormat {
 
     String formatIngredientForDisplay(@NonNull final Ingredient ingredient);
-
-    String formatIngredientForDisplay(@NonNull final DbIngredient dbIngredient);
-
-
     String formatServings(int servings);
 
     String formatServings(@NonNull String servingsFormat, int servings);

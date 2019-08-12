@@ -40,33 +40,23 @@ public class BaseRecipeOptionsMenu implements RecipeOptionsMenu, BakingAppConsta
     @Override
     public BottomNavigationView.OnNavigationItemSelectedListener createOnNavigationItemSelectedListener(@NonNull AppCompatActivity activity) {
         if (!(activity instanceof StepNavigation)) {
-            return new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                    return false;
-                }
-            };
+            return item -> false;
         }
         final StepNavigation callback = (StepNavigation) activity;
-        return new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.navigation_prev:
-                        callback.loadNewStep(SortOrder.DESCENDING);
-                        return true;
-                    case R.id.navigation_next:
-                        callback.loadNewStep(SortOrder.ASCENDING);
-                        return true;
-                    case R.id.navigation_home:
-                        Intent intent = new Intent(activity, MainBakingActivity.class);
-                        activity.startActivity(intent);
-                        return true;
-                }
-                return false;
+        return item -> {
+            switch (item.getItemId()) {
+                case R.id.navigation_prev:
+                    callback.loadNewStep(SortOrder.DESCENDING);
+                    return true;
+                case R.id.navigation_next:
+                    callback.loadNewStep(SortOrder.ASCENDING);
+                    return true;
+                case R.id.navigation_home:
+                    Intent intent = new Intent(activity, MainBakingActivity.class);
+                    activity.startActivity(intent);
+                    return true;
             }
-
+            return false;
         };
     }
 
@@ -88,27 +78,8 @@ public class BaseRecipeOptionsMenu implements RecipeOptionsMenu, BakingAppConsta
             final int iconResource = resourceOverrides.getRecipeIconOverrideMap().get(recipe.getName());
             menu.add(0, recipe.getId(), Menu.NONE, recipe.getName()).setIcon(iconResource);
         }
-        /**
-         final RecipesFacade recipesFacade = new BaseRecipesFacade(activity);
-         List<DbRecipe> recipes = new ArrayList<>();
-
-         AppExecutors.getInstance().diskIO().execute(() -> {
-         final List<DbRecipe> recipeList = recipesFacade.fetchAllRecipes();
-
-         if (recipeList != null) {
-         menu.clear();
-         for (DbRecipe recipe : recipes) {
-         final int iconResource = recipe.getIconResource() == 0
-         ? resourceOverrides.getRecipeIconOverrideMap().get(recipe.getName()) : recipe.getIconResource();
-         menu.add(0, recipe.getId(), Menu.NONE, recipe.getName()).setIcon(iconResource);
-         }
-
-         }
-
-         });
-         */
-
         ActionBar actionBar = activity.getSupportActionBar();
+        assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(false);
     }
 
