@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -25,11 +26,10 @@ import com.mobile.anvce.baking.api.RecipesFacade;
 import com.mobile.anvce.baking.api.ResourceOverrides;
 import com.mobile.anvce.baking.api.UiDisplayFormat;
 import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
+import com.mobile.anvce.baking.executors.AppExecutors;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Ingredient;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,23 +59,18 @@ public class RecipeWidgetProvider extends AppWidgetProvider implements BakingApp
         context.sendBroadcast(intent);
     }
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, DbRecipe recipe) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
-        final RecipesFacade recipesFacade = new BaseRecipesFacade(context);
-        List<DbRecipe> recipes = new ArrayList<>();
-        recipes.addAll(recipesFacade.fetchAllRecipes());
-        DbRecipe recipe = recipesFacade.anyRecipe(recipes);
         editor.putInt(PREFS_WIDGET_RECIPE_ID, recipe.getId());
         final Set<String> ingredientItems = new HashSet<>();
         final UiDisplayFormat formatterApi = new BaseUiDisplayFormat(context);
-        List<Ingredient> ingredientList = new RecipeCustomDataConverter().toIngredientList(recipe.getIngredientsListAsString());
-        for (Ingredient ingredient : ingredientList) {
+        for (Ingredient ingredient : recipe.getIngredients()) {
             ingredientItems.add(formatterApi.formatIngredientForDisplay(ingredient));
         }
         editor.putStringSet(PREFS_WIDGET_RECIPE_INGREDIENTS, ingredientItems);
         editor.apply();
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.baking_recipes_app_widget);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.recipes_widget_provider);
         final Intent widgetClickIntent = ingredientsWidgetApi.buildWidgetClickIntent(context, recipe);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, widgetClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         //Widgets allow click handlers to only launch pending intents
@@ -99,8 +94,21 @@ public class RecipeWidgetProvider extends AppWidgetProvider implements BakingApp
     }
 
     static void updateAppWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+
+        final RecipesFacade recipesFacade = new BaseRecipesFacade(context);
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            final List<DbRecipe> recipes = recipesFacade.fetchAllRecipes();
+            assert recipes != null;
+            final DbRecipe recipe = recipesFacade.anyRecipe(recipes);
+            Log.d(TAG, "Retrieved recipies");
+            updateWidgets(context, appWidgetManager, appWidgetIds, recipe);
+        });
+
+    }
+
+    private static void updateWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds, DbRecipe recipe) {
         for (int appWidgetId : appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId);
+            updateAppWidget(context, appWidgetManager, appWidgetId, recipe);
         }
     }
 

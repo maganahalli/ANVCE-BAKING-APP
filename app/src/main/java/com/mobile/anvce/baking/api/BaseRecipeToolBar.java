@@ -1,5 +1,6 @@
 package com.mobile.anvce.baking.api;
 
+import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -11,9 +12,12 @@ import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mobile.anvce.baking.database.DbRecipe;
+import com.mobile.anvce.baking.models.Recipe;
+
+import java.util.Objects;
 
 /**
- * Implementation of the Toolbar
+ * Implementation of the Recipe Toolbar
  */
 public class BaseRecipeToolBar implements RecipeToolBar {
 
@@ -34,10 +38,10 @@ public class BaseRecipeToolBar implements RecipeToolBar {
         toolbar.setBackgroundColor(backgroundColor);
         toolbar.setTitleTextColor(titleTextColor);
         activity.setSupportActionBar(toolbar);
-        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(activity.getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         setText(recipeTitleView, recipeName);
 //		handle the images if present.
-        final String imageUrlString = recipe.getImage().isEmpty()
+        final String imageUrlString = TextUtils.isEmpty(recipe.getImage())
                 ? resourceOverrides.getRecipeImageOverrideMap().get(recipeName) : recipe.getImage();
         setText(yieldDescription, beautifier.formatServings(recipe.getServings()));
         if (mRecipeImageView != null) {
@@ -50,7 +54,7 @@ public class BaseRecipeToolBar implements RecipeToolBar {
     }
 
 
-    void setText(TextView view, final String text) {
+    private void setText(TextView view, final String text) {
         if (view == null) {
             return;
         }

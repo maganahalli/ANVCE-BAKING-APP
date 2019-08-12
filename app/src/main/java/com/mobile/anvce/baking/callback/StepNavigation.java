@@ -3,7 +3,6 @@ package com.mobile.anvce.baking.callback;
 import androidx.annotation.NonNull;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.enums.SortOrder;
 import com.mobile.anvce.baking.models.Step;
 
@@ -17,10 +16,10 @@ public interface StepNavigation {
 
     void loadNewStep(@NonNull final SortOrder sort);
 
-    void loadNewStep(@NonNull DbStep step, int recipeId, @NonNull List<DbStep> steps);
+    void loadNewStep(@NonNull Step step, int recipeId, @NonNull List<Step> steps);
 
     void manageBottomNavigationItems();
 
-    void updateSelectedStep(@NonNull DbStep step, int position);
+    void updateSelectedStep(@NonNull Step step, int position);
 
 }

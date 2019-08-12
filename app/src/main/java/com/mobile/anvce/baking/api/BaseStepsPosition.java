@@ -6,10 +6,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Step;
-import com.mobile.anvce.baking.transformers.DbStepFromStep;
 
 import java.util.ArrayList;
 
@@ -21,17 +19,14 @@ public class BaseStepsPosition implements StepsPosition, BakingAppConstants {
     }
 
     @Override
-    public ArrayList<DbStep> getArrayOfSteps(Bundle arguments) {
-        final ArrayList<DbStep> list = new ArrayList<DbStep>();
+    public ArrayList<Step> getArrayOfSteps(Bundle arguments) {
+        final ArrayList<Step> list = new ArrayList<>();
         if (arguments != null && arguments.containsKey(ARG_STEPS_ARRAY)) {
             final ArrayList<Parcelable> items = arguments.getParcelableArrayList(ARG_STEPS_ARRAY);
+            assert items != null;
             for (Parcelable item : items) {
-                if (item instanceof DbStep) {
-                    list.add((DbStep) item);
-                } else if (item instanceof Step) {
-                    Step step = (Step) item;
-                    DbStep dStep = new DbStepFromStep().transform(step);
-                    list.add(dStep);
+                if (item instanceof Step) {
+                    list.add((Step) item);
                 }
             }
         }

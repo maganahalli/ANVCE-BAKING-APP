@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ANVCE-BAKING-APP</string>
+    <string name="app_name">BAKING-APP</string>
     <string name="title_item_detail">Item Detail</string>
     <string name="no_ingredients_available">There are no ingredients available for this recipe.</string>
     <string name="subtitle_yield">Yield:</string>
@@ -16,7 +16,7 @@
     <string name="restart">Restart</string>
     <string name="notification_text">Press play to hear the piece!</string>
     <string name="playStepInstructionVideo">Play the Step Instruction Video</string>
-    <string name="appwidget_text">EXAMPLE</string>
+    <string name="appwidget_text">Recipe Widget</string>
     <string name="baking_recipes_widget">Baking Recipes Widget</string>
     <string name="ingredients">Ingredients</string>
     <string name="view_ingredients">View Ingredients</string>
@@ -44,5 +44,6 @@
     <string name="empty_steps_list">No Recipe Steps Information Available</string>
     <string name="bottom_navigation_visibility">visible</string>
     <string name="bakingTime">Baking Time</string>
+    <string name="add_widget">Add widget</string>
 
 </resources>

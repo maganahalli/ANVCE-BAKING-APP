@@ -9,7 +9,7 @@ import com.mobile.anvce.baking.models.BakingAppConstants;
 /**
  * Implementation of the IngredientsAndDescriptionIntent
  */
-public class IngredientsAndDescriptionIntentBuilder implements  IngredientsAndDescriptionIntent, BakingAppConstants {
+public class IngredientsAndDescriptionIntentBuilder implements IngredientsAndDescriptionIntent, BakingAppConstants {
 
     private final Context context;
     private final StepsPosition stepsPosition;

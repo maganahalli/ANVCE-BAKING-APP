@@ -24,9 +24,9 @@ import javax.inject.Inject;
 public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsViewHolder> {
 
 
+    private final List<Ingredient> ingredients;
     @Inject
     UiDisplayFormat beautifier;
-    private final List<Ingredient> ingredients;
 
     public IngredientsAdapter(@NonNull final Context context, @NonNull final List<Ingredient> ingredients) {
         this.ingredients = ingredients;

@@ -15,6 +15,8 @@ import com.mobile.anvce.baking.api.RecipesFacade;
 import com.mobile.anvce.baking.database.AppDatabase;
 import com.mobile.anvce.baking.database.DbRecipe;
 import com.mobile.anvce.baking.executors.AppExecutors;
+import com.mobile.anvce.baking.models.Recipe;
+import com.mobile.anvce.baking.transformers.RecipeFromDbRecipe;
 
 import javax.inject.Inject;
 
@@ -22,7 +24,7 @@ import butterknife.BindColor;
 import butterknife.BindView;
 
 public abstract class CommonActivity extends AppCompatActivity {
-    final String TAG = this.getClass().getSimpleName();
+   private  final String TAG = this.getClass().getSimpleName();
 
     @BindColor(R.color.colorPrimaryDark)
     int colorPrimaryDark;
@@ -46,14 +48,11 @@ public abstract class CommonActivity extends AppCompatActivity {
     RecipeToolBar toolbarPresenter;
 
     public void populateToolbar(int mRecipeId) {
-
         AppExecutors.getInstance().diskIO().execute(() -> {
             final DbRecipe retrievedRecipe = AppDatabase.getInstance(this).receipeDao().retrieveRecipeById(mRecipeId);
-            assert retrievedRecipe != null;
-            Log.d(TAG, "Recipe Name:" + retrievedRecipe.getName() + "");
-
             runOnUiThread(() -> {
-                if (retrievedRecipe != null) {
+                if(retrievedRecipe != null) {
+                    Log.d(TAG, "Recipe Name:" + retrievedRecipe.getName() + "");
                     populateToolbar(retrievedRecipe);
                 }
             });
@@ -61,8 +60,8 @@ public abstract class CommonActivity extends AppCompatActivity {
     }
 
 
-    public void populateToolbar(@NonNull DbRecipe recipe) {
-        toolbarPresenter.populateToolbar(this, recipe, toolbar, recipeTitleView,
+    public void populateToolbar(@NonNull DbRecipe dbRecipe) {
+        toolbarPresenter.populateToolbar(this, dbRecipe, toolbar, recipeTitleView,
                 yieldDescription, mRecipeImageView, colorPrimaryDark, white);
     }
 }

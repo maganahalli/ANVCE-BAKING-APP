@@ -1,6 +1,7 @@
 package com.mobile.anvce.baking.activities;
 
 import android.app.Dialog;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -44,8 +45,12 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.mobile.anvce.baking.R;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.models.BakingAppConstants;
+import com.mobile.anvce.baking.models.Step;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 import butterknife.BindDrawable;
 import butterknife.BindString;
@@ -58,6 +63,7 @@ import butterknife.Unbinder;
  */
 public class StepDetailFragment extends Fragment implements Player.EventListener, BakingAppConstants {
 
+    private static final String CHANNEL_ID = "5";
     private static MediaSessionCompat mMediaSession;
     private final String PLAY_STATE = "playState";
     private final String STATE_PLAYER_FULLSCREEN = "playerFullscreen";
@@ -70,7 +76,6 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     Drawable fullscreenExpand;
     @BindDrawable(R.drawable.ic_fullscreen_skrink)
     Drawable fullscreenSkrink;
-    boolean isPlayWhenReady;
     @BindView(R.id.description)
     TextView mDescriptionView;
     @BindView(R.id.exoplayer)
@@ -100,6 +105,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     View recipeInstructionContainer;
     @BindString(R.string.restart)
     String restart;
+    private boolean isPlayWhenReady;
     private SimpleExoPlayer mExoPlayer;
     private boolean mExoPlayerFullscreen = false;
     private Dialog mFullScreenDialog;
@@ -108,25 +114,28 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     private int mResumeWindow;
     private PlaybackStateCompat.Builder mStateBuilder;
     private MediaSource mVideoSource;
-    private DbStep step;
+    private Step step;
     private Unbinder unbinder;
-    private boolean videoFullScreenByDefault = false;
 
     public StepDetailFragment() {
     }
 
     private void closeFullscreenDialog() {
+        assert mExoPlayerView != null;
         ((ViewGroup) mExoPlayerView.getParent()).removeView(mExoPlayerView);
+        assert mainMediaFrame != null;
         mainMediaFrame.addView(mExoPlayerView);
         mExoPlayerFullscreen = false;
         mFullScreenDialog.dismiss();
+        assert mFullScreenIcon != null;
         mFullScreenIcon.setImageDrawable(fullscreenExpand);
     }
 
     private void initExoPlayer(Uri mediaUri) {
         if (mExoPlayer == null) {
             TrackSelector trackSelector = new DefaultTrackSelector();
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelector);
+            mExoPlayer = ExoPlayerFactory.newSimpleInstance(Objects.requireNonNull(getActivity()), trackSelector);
+            assert mExoPlayerView != null;
             mExoPlayerView.setPlayer(mExoPlayer);
 
             // Set the ExoPlayer.EventListener to this activity.
@@ -139,12 +148,10 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
             }
 
             // Prepare the MediaSource.
-            String userAgent = Util.getUserAgent(getActivity(), appName);
-
             // Create a data source factory.
             DataSource.Factory dataSourceFactory =
                     new DefaultHttpDataSourceFactory(Util.getUserAgent(getActivity(), "app-name"));
-// Create a progressive media source pointing to a stream uri.
+            // Create a progressive media source pointing to a stream uri.
             mVideoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(mediaUri);
             mExoPlayer.prepare(mVideoSource);
@@ -154,7 +161,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
 
     private void initFullscreenDialog() {
 
-        mFullScreenDialog = new Dialog(getActivity(), android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
+        mFullScreenDialog = new Dialog(Objects.requireNonNull(getActivity()), android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
             public void onBackPressed() {
                 if (mExoPlayerFullscreen)
                     closeFullscreenDialog();
@@ -170,7 +177,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     private void initializeMediaSession() {
 
         // Create a MediaSessionCompat.
-        mMediaSession = new MediaSessionCompat(getActivity(), TAG);
+        mMediaSession = new MediaSessionCompat(Objects.requireNonNull(getActivity()), TAG);
 
         // Enable callbacks from MediaButtons and TransportControls.
         mMediaSession.setFlags(
@@ -198,7 +205,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
 
     }
 
-    protected boolean isVideoUrlEmpty() {
+    private boolean isVideoUrlEmpty() {
         return step.getVideoURL().isEmpty();
     }
 
@@ -224,9 +231,10 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
         // Initialize the player view.
         final View view = inflater.inflate(isVideoUrlEmpty() ? R.layout.fragment_step_instruction_only : R.layout.fragment_step_detail, container, false);
         unbinder = ButterKnife.bind(this, view);
-        videoFullScreenByDefault = getResources().getBoolean(R.bool.videoFullScreen);
+        boolean videoFullScreenByDefault = getResources().getBoolean(R.bool.videoFullScreen);
         mDescriptionView.setText(step.getDescription());
         mShortDescriptionView.setText(step.getShortDescription());
+        assert recipeInstructionContainer != null;
         recipeInstructionContainer.setVisibility(videoFullScreenByDefault ? View.GONE : View.VISIBLE);
         return view;
     }
@@ -244,6 +252,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
             }
         }
         releasePlayer();
+        unbinder.unbind();
     }
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
@@ -251,6 +260,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        unbinder.unbind();
     }
 
     @Override
@@ -277,6 +287,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     @Override
     public void onPlayerError(ExoPlaybackException error) {
         Log.e(TAG, "error during playback - ", error);
+        assert mExoPlayerView != null;
         mExoPlayerView.setVisibility(View.GONE);
     }
 
@@ -330,11 +341,11 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     public void onResume() {
         super.onResume();
         if (isVideoUrlEmpty()) {
+            assert recipeInstructionContainer != null;
             recipeInstructionContainer.setVisibility(View.VISIBLE);
             return;
         }
         initFullscreenDialog();
-        String userAgent = Util.getUserAgent(getActivity(), getActivity().getApplicationContext().getApplicationInfo().packageName);
         final Uri videoUri = Uri.parse(step.getVideoURL());
         // Create a data source factory.
         DataSource.Factory dataSourceFactory =
@@ -346,15 +357,17 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
         initExoPlayer(videoUri);
 
         if (mExoPlayerFullscreen) {
+            assert mExoPlayerView != null;
             ((ViewGroup) mExoPlayerView.getParent()).removeView(mExoPlayerView);
             mFullScreenDialog.addContentView(mExoPlayerView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            assert mFullScreenIcon != null;
             mFullScreenIcon.setImageDrawable(fullscreenSkrink);
             mFullScreenDialog.show();
         }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NotNull Bundle outState) {
         outState.putInt(STATE_RESUME_WINDOW, mResumeWindow);
         outState.putLong(STATE_RESUME_POSITION, mResumePosition);
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, mExoPlayerFullscreen);
@@ -374,15 +387,6 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
-    }
-
-    private void openFullscreenDialog() {
-
-        ((ViewGroup) mExoPlayerView.getParent()).removeView(mExoPlayerView);
-        mFullScreenDialog.addContentView(mExoPlayerView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mFullScreenIcon.setImageDrawable(fullscreenSkrink);
-        mExoPlayerFullscreen = true;
-        mFullScreenDialog.show();
     }
 
     /**
@@ -407,7 +411,8 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
      * @param state The PlaybackState of the MediaSession.
      */
     private void showNotification(PlaybackStateCompat state) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getActivity(), "14");
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(Objects.requireNonNull(getActivity()), CHANNEL_ID);
 
         int icon;
         String play_pause;
@@ -441,6 +446,14 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
                 .addAction(playPauseAction);
 
         mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    "ANVCE_BAKING_APP",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("Recipe step details");
+            mNotificationManager.createNotificationChannel(channel);
+        }
+
         mNotificationManager.notify(0, builder.build());
     }
 

@@ -11,7 +11,6 @@ import com.mobile.anvce.baking.R;
 import com.mobile.anvce.baking.api.BaseStepsPosition;
 import com.mobile.anvce.baking.api.RecipeStepsOnClickHandler;
 import com.mobile.anvce.baking.api.StepsPosition;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.models.Step;
 
 import butterknife.BindView;
@@ -20,13 +19,13 @@ import butterknife.ButterKnife;
 public class StepViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     @BindView(R.id.description)
-   public  TextView mAbbreviatedLongDescriptionView;
+    public TextView mAbbreviatedLongDescriptionView;
     @BindView(R.id.shortDescription)
-   public  TextView mShortDescriptionView;
+    public TextView mShortDescriptionView;
     @BindView(R.id.stepNumber)
-   public  TextView mStepNumberView;
+    public TextView mStepNumberView;
     @BindView(R.id.stepThumbnail)
-   public  ImageView mStepThumbnailView;
+    public ImageView mStepThumbnailView;
     StepsPosition stepsPosition;
     private Context context;
     private RecipeStepsOnClickHandler mClickHandler;
@@ -43,10 +42,6 @@ public class StepViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         return context;
     }
 
-    public RecipeStepsOnClickHandler getClickHandler() {
-        return mClickHandler;
-    }
-
     public void setClickHandler(RecipeStepsOnClickHandler mClickHandler) {
         this.mClickHandler = mClickHandler;
     }
@@ -54,7 +49,7 @@ public class StepViewHolder extends RecyclerView.ViewHolder implements View.OnCl
     @Override
     public void onClick(View view) {
         stepsPosition.setStepsPosition(getAdapterPosition());
-        DbStep step = (DbStep) view.getTag();
+        Step step = (Step) view.getTag();
         mClickHandler.onClick(this, step);
     }
 }

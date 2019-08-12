@@ -1,13 +1,12 @@
 package com.mobile.anvce.baking.transformers;
 
 import com.mobile.anvce.baking.database.DbStep;
-import com.mobile.anvce.baking.models.Step;
 import com.mobile.anvce.baking.populators.AnvcePopulatingTransformer;
 
 /**
  * Transforms MovieDetails to DbMovieDetail.
  */
-public class DbStepFromStep extends AnvcePopulatingTransformer<Step, DbStep> {
+public class DbStepFromStep extends AnvcePopulatingTransformer<com.mobile.anvce.baking.models.Step, DbStep> {
 
     @Override
     protected DbStep createTarget() {
@@ -15,7 +14,7 @@ public class DbStepFromStep extends AnvcePopulatingTransformer<Step, DbStep> {
     }
 
     @Override
-    protected void populateContents(Step source, DbStep target) {
+    protected void populateContents(com.mobile.anvce.baking.models.Step source, DbStep target) {
         target.setDescription(source.getDescription());
         target.setRecipeId(source.getRecipeId());
         target.setStepId(source.getStepId());

@@ -19,5 +19,7 @@ public class DbIngredientFromIngredient extends AnvcePopulatingTransformer<Ingre
         target.setMeasure(source.getMeasure());
         target.setQuantity(source.getQuantity());
         target.setIngredient(source.getIngredient());
+        target.setIngredientId(source.getIngredientId());
+        target.setRecipeId(source.getRecipeId());
     }
 }

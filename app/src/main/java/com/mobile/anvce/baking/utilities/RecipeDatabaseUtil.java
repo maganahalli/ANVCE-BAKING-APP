@@ -34,12 +34,12 @@ public final class RecipeDatabaseUtil {
         this.context = context;
     }
 
-    private void saveStepToDatabase(final Step step, final DbStep dbStep) {
+    private void saveStepToDatabase(final com.mobile.anvce.baking.models.Step step, final DbStep dbStep) {
         AppExecutors.getInstance().diskIO().execute(() -> {
-            DbStep retrievedRecord = recipeDataBase.receipeDao().retrieveStepById(step.getRecipeId(),dbStep.getStepId());
+            DbStep retrievedRecord = recipeDataBase.receipeDao().retrieveStepById(step.getRecipeId(), dbStep.getStepId());
             if (retrievedRecord != null) {
-                    Log.d(TAG, "Updating Step with id :" + step.getId() + "");
-                    recipeDataBase.receipeDao().updateStep(dbStep);
+                Log.d(TAG, "Updating Step with id :" + step.getId() + "");
+                recipeDataBase.receipeDao().updateStep(dbStep);
                 return;
             }
             Log.d(TAG, "Updating Step with id :" + dbStep.getRecipeId() + "");
@@ -59,11 +59,16 @@ public final class RecipeDatabaseUtil {
         fileContentString = "".equals(jsonString) ? buildJSONFromLocalResource(context) : jsonString;
         List<Recipe> recipes = new RecipeCustomDataConverter().toRecipeList(fileContentString);
         updateStepsWithRecipeId(recipes);
+        updateRecipeIdForIngredients(recipes);
+        //makeText(TAG, "------collectRecipesFromLocalResource--------", LENGTH_SHORT).show();
+        return recipes;
+    }
+
+
+    public void storeRecipesToDatabase(List<Recipe> recipes) {
         storeIngredients(recipes);
         storeSteps(recipes);
         storeRecipes(recipes);
-        //makeText(TAG, "------collectRecipesFromLocalResource--------", LENGTH_SHORT).show();
-        return recipes;
     }
 
     private void updateStepsWithRecipeId(List<Recipe> recipes) {
@@ -84,14 +89,37 @@ public final class RecipeDatabaseUtil {
      *
      * @param recipe Recipe object
      */
-    private void updateRecipeIdForSteps(@NonNull final Recipe recipe) {
-        int stepCounter=0;
+    public void updateRecipeIdForSteps(@NonNull final Recipe recipe) {
+        int stepCounter = 0;
         for (Step step : recipe.getSteps()) {
             step.setRecipeId(recipe.getId());
             step.setStepId(stepCounter);
             stepCounter++;
         }
     }
+
+    /**
+     * Updates Steps with the corresponding Recipe Id
+     *
+     * @param recipe Recipe object
+     */
+    private void updateRecipeIdForIngredients(@NonNull final Recipe recipe) {
+        int ingredientCounter = 0;
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            ingredient.setRecipeId(recipe.getId());
+            ingredient.setIngredientId(ingredientCounter);
+            ingredientCounter++;
+        }
+    }
+
+
+    private void updateRecipeIdForIngredients(List<Recipe> recipes) {
+        for (Recipe recipe : recipes) {
+            updateRecipeIdForIngredients(recipe);
+        }
+
+    }
+
 
     private void saveRecipeToDatabase(final Recipe recipe, final DbRecipe dbRecipe) {
         AppExecutors.getInstance().diskIO().execute(() -> {
@@ -141,20 +169,16 @@ public final class RecipeDatabaseUtil {
     }
 
     private void storeIngredients(Recipe recipe) {
-        int ingredientId=0;
         for (Ingredient ingredient : recipe.getIngredients()) {
             final DbIngredient dbIngredient = new DbIngredientFromIngredient().transform(ingredient);
-            dbIngredient.setRecipeId(recipe.getId());
-            dbIngredient.setIngredientId(ingredientId);
             storeIngredientToDatabase(ingredient, dbIngredient);
-            ingredientId++;
         }
 
     }
 
     private void storeIngredientToDatabase(Ingredient ingredient, DbIngredient dbIngredient) {
         AppExecutors.getInstance().diskIO().execute(() -> {
-            DbIngredient retrievedRecord = recipeDataBase.receipeDao().retrieveIngredientById(dbIngredient.getRecipeId(),dbIngredient.getIngredientId());
+            DbIngredient retrievedRecord = recipeDataBase.receipeDao().retrieveIngredientById(ingredient.getRecipeId(), ingredient.getIngredientId());
             if (retrievedRecord != null) {
                 Log.d(TAG, "Updating Ingredient with id :" + dbIngredient.getRecipeId() + "");
                 recipeDataBase.receipeDao().updateIngredient(dbIngredient);
@@ -176,7 +200,7 @@ public final class RecipeDatabaseUtil {
 
 
     private void storeSteps(Recipe recipe) {
-        for (Step step : recipe.getSteps()) {
+        for (com.mobile.anvce.baking.models.Step step : recipe.getSteps()) {
             final DbStep dbStep = new DbStepFromStep().transform(step);
             saveStepToDatabase(step, dbStep);
         }

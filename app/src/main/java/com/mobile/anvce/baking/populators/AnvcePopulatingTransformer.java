@@ -73,19 +73,6 @@ public abstract class AnvcePopulatingTransformer<O, T> extends AnvceBaseTransfor
      */
     protected abstract void populateContents(O source, T target);
 
-    /**
-     * TODO explore the need to use this, ambiguous input parameters should be
-     * challenged.
-     * <p>
-     * Right now we are using this to deal with fields in the schema that are
-     * typed as Object - we should get isis to change these.
-     *
-     * @param value an object
-     * @return a string
-     */
-    protected String toStringFromObjectField(Object value) {
-        return value == null ? "" : value.toString();
-    }
 
     /**
      * Convert the supplied object to a String or null.

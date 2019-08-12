@@ -40,13 +40,34 @@ public class Ingredient implements Parcelable {
     @Expose
     private String ingredient;
 
+    private Integer recipeId;
+    private Integer ingredientId;
+
     protected Ingredient(Parcel in) {
         this.quantity = ((Double) in.readValue((Double.class.getClassLoader())));
         this.measure = ((String) in.readValue((String.class.getClassLoader())));
         this.ingredient = ((String) in.readValue((String.class.getClassLoader())));
+        this.ingredientId = ((Integer) in.readValue((Integer.class.getClassLoader())));
+        this.recipeId = ((Integer) in.readValue((Integer.class.getClassLoader())));
     }
 
     public Ingredient() {
+    }
+
+    public Integer getRecipeId() {
+        return recipeId;
+    }
+
+    public void setRecipeId(Integer recipeId) {
+        this.recipeId = recipeId;
+    }
+
+    public Integer getIngredientId() {
+        return ingredientId;
+    }
+
+    public void setIngredientId(Integer ingredientId) {
+        this.ingredientId = ingredientId;
     }
 
     public Double getQuantity() {
@@ -92,6 +113,8 @@ public class Ingredient implements Parcelable {
         dest.writeValue(quantity);
         dest.writeValue(measure);
         dest.writeValue(ingredient);
+        dest.writeValue(recipeId);
+        dest.writeValue(ingredientId);
     }
 
     public int describeContents() {

@@ -1,5 +1,6 @@
 package com.mobile.anvce.baking.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -35,6 +36,8 @@ public abstract interface RecipeDao {
     @Query("SELECT * FROM RECIPE")
     List<DbRecipe> fetchAllRecipes();
 
+    @Query("SELECT * FROM RECIPE")
+    LiveData<List<DbRecipe>> loadAllRecipes();
 
     @Query("SELECT * FROM STEP WHERE recipeId=:recipeId AND stepId=:stepId")
     DbStep retrieveStepById(int recipeId, int stepId);

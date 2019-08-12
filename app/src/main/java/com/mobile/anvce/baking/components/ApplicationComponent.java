@@ -9,7 +9,6 @@ import com.mobile.anvce.baking.activities.RecipeStepFragment;
 import com.mobile.anvce.baking.activities.StepDetailActivity;
 import com.mobile.anvce.baking.adapters.IngredientsAdapter;
 import com.mobile.anvce.baking.adapters.RecipeAdapter;
-import com.mobile.anvce.baking.adapters.RecipeStepsAdapter;
 import com.mobile.anvce.baking.api.IngredientsAndDescriptionIntent;
 import com.mobile.anvce.baking.api.RecipeOptionsMenu;
 import com.mobile.anvce.baking.api.RecipeToolBar;
@@ -17,8 +16,8 @@ import com.mobile.anvce.baking.api.RecipesFacade;
 import com.mobile.anvce.baking.api.ResourceOverrides;
 import com.mobile.anvce.baking.api.StepsPosition;
 import com.mobile.anvce.baking.api.UiDisplayFormat;
-import com.mobile.anvce.baking.application.RecipeApplication;
 import com.mobile.anvce.baking.application.ApplicationModule;
+import com.mobile.anvce.baking.application.RecipeApplication;
 
 import javax.inject.Singleton;
 
@@ -48,7 +47,6 @@ public interface ApplicationComponent {
     StepsPosition getStepsAdapterPosition();
 
     RecipeToolBar getRecipeToolbar();
-
 
 
     void inject(RecipeApplication recipeApplication);

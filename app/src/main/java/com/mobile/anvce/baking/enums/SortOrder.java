@@ -19,6 +19,15 @@ public enum SortOrder {
         return AnvceEnums.fromString(SortOrder.class, criteria, UNKNOWN);
     }
 
+    public boolean isAscending() {
+        return false;
+    }
+
+    public boolean isDescending() {
+        return false;
+    }
+
+
     public interface SortOrderByVisitor<I, O> extends AnvceVisitor {
 
         O visitAscending(I input);
@@ -26,16 +35,6 @@ public enum SortOrder {
         O visitDescending(I input);
 
         O visitUnknown(I input);
-    }
-
-
-    public boolean isAscending() {
-        return false;
-    }
-
-
-    public boolean isDescending() {
-        return false;
     }
 
 }

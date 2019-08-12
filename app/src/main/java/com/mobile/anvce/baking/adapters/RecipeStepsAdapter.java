@@ -19,7 +19,6 @@ import com.bumptech.glide.request.target.Target;
 import com.mobile.anvce.baking.R;
 import com.mobile.anvce.baking.api.BaseStepsPosition;
 import com.mobile.anvce.baking.api.RecipeStepsOnClickHandler;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.models.Step;
 import com.mobile.anvce.baking.viewholders.StepViewHolder;
 
@@ -29,9 +28,9 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<StepViewHolder> {
 
     final private RecipeStepsOnClickHandler mClickHandler;
     final private Context context;
-    private final ArrayList<DbStep> mSteps;
+    private final ArrayList<Step> mSteps;
 
-    public RecipeStepsAdapter(Context context, ArrayList<DbStep> mSteps, RecipeStepsOnClickHandler mClickHandler) {
+    public RecipeStepsAdapter(Context context, ArrayList<Step> mSteps, RecipeStepsOnClickHandler mClickHandler) {
         this.context = context;
         this.mClickHandler = mClickHandler;
         this.mSteps = mSteps;
@@ -47,7 +46,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<StepViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
-        final DbStep step = mSteps.get(position);
+        final Step step = mSteps.get(position);
         holder.mShortDescriptionView.setText(step.getShortDescription());
         holder.mAbbreviatedLongDescriptionView.setText(step.getFormattedDescription());
         holder.mStepThumbnailView.setVisibility(step.getThumbnailURL().isEmpty() ? View.GONE : View.VISIBLE);

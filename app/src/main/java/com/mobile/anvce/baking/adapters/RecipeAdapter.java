@@ -36,7 +36,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeViewHolder> implem
     @Inject
     ResourceOverrides resourceOverridesApi;
 
-    public RecipeAdapter(@NonNull MainBakingActivity context, List<Recipe> list, boolean twoPane) {
+    public RecipeAdapter(@NonNull MainBakingActivity context, List<Recipe> list) {
         this.list = list;
         this.context = context;
         ((RecipeApplication) context.getApplicationContext()).getApplicationComponent().inject(this);
@@ -66,6 +66,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeViewHolder> implem
             public void onClick(View view) {
                 Intent intent = new Intent(context, IngredientsListActivity.class);
                 intent.putExtra(BakingAppConstants.RECIPE_ID, recipe.getId());
+                intent.putExtra(BakingAppConstants.RECIPE, recipe);
                 context.startActivity(intent);
             }
         });

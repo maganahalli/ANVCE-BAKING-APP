@@ -16,9 +16,12 @@ import com.mobile.anvce.baking.api.RecipeOptionsMenu;
 import com.mobile.anvce.baking.api.StepsPosition;
 import com.mobile.anvce.baking.application.RecipeApplication;
 import com.mobile.anvce.baking.callback.StepNavigation;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.enums.SortOrder;
 import com.mobile.anvce.baking.models.BakingAppConstants;
+import com.mobile.anvce.baking.models.Recipe;
+import com.mobile.anvce.baking.models.Step;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +44,13 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     @Inject
     StepsPosition stepsPosition;
     private int recipeId;
-    private DbStep step = new DbStep();
-    private List<DbStep> steps = new ArrayList<>();
+    private Step step = new Step();
+    private final List<Step> steps;
+    private Recipe mRecipe;
+
+    public StepDetailActivity() {
+        steps = new ArrayList<>();
+    }
 
     @Override
     public OnNavigationItemSelectedListener createOnNavigationItemSelectedListener() {
@@ -54,7 +62,7 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     public void loadNewStep(@NonNull SortOrder sort) {
         if (sort.isAscending()) {
             int position = 0;
-            for (DbStep stepToNavigate : steps) {
+            for (Step stepToNavigate : steps) {
                 if (stepToNavigate.getStepId() > step.getStepId()) {
                     Log.d(TAG, String.format("new step: %s", stepToNavigate));
                     updateSelectedStep(stepToNavigate, position);
@@ -65,7 +73,7 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
             }
         } else {
             for (int counter = steps.size() - 1; counter >= 0; counter--) {
-                DbStep stepToNavigate = steps.get(counter);
+                Step stepToNavigate = steps.get(counter);
                 if (stepToNavigate.getStepId() < step.getStepId()) {
                     Log.d(TAG, String.format("new step: %s", stepToNavigate));
                     updateSelectedStep(stepToNavigate, counter);
@@ -77,10 +85,10 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     }
 
     @Override
-    public void loadNewStep(@NonNull DbStep step, int recipeId, @NonNull List<DbStep> steps) {
+    public void loadNewStep(@NonNull Step step, int recipeId, @NonNull List<Step> steps) {
         Bundle args = new Bundle();
         args.putParcelable(STEP_EXTRA, step);
-        final ArrayList<DbStep> stepsArray = getDbStepArray(steps);
+        final ArrayList<Step> stepsArray = getDbStepArray(steps);
         Intent intent = new Intent(this, StepDetailActivity.class);
         intent.putExtra(STEP_EXTRA, step);
         intent.putExtra(RECIPE_ID, recipeId);
@@ -88,12 +96,8 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
         startActivity(intent);
     }
 
-    private ArrayList<DbStep> getDbStepArray(List<DbStep> steps) {
-        ArrayList<DbStep> arrayList = new ArrayList<>();
-        for (DbStep step : steps) {
-            arrayList.add(step);
-        }
-        return arrayList;
+    private ArrayList<Step> getDbStepArray(List<Step> steps) {
+        return new ArrayList<>(steps);
     }
 
     @Override
@@ -122,11 +126,13 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
         ButterKnife.bind(this);
         step = getIntent().getParcelableExtra(STEP_EXTRA);
         recipeId = getIntent().getIntExtra(RECIPE_ID, 1);
+        mRecipe = getIntent().getParcelableExtra(BakingAppConstants.RECIPE);
         final ArrayList<Parcelable> items = getIntent().getParcelableArrayListExtra(ARG_STEPS_ARRAY);
         steps.clear();
+        assert items != null;
         for (Parcelable item : items) {
-            if (item instanceof DbStep) {
-                steps.add((DbStep) item);
+            if (item instanceof Step) {
+                steps.add((Step) item);
             }
         }
         navigationView.setOnNavigationItemSelectedListener(createOnNavigationItemSelectedListener());
@@ -138,22 +144,19 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
             arguments.putParcelable(STEP_EXTRA, step);
             arguments.putInt(RECIPE_ID, recipeId);
             arguments.putParcelableArrayList(ARG_STEPS_ARRAY, getStepsArrayList(steps));
+            arguments.putParcelable(BakingAppConstants.RECIPE, mRecipe);
             StepDetailFragment stepDetailFragment = new StepDetailFragment();
             stepDetailFragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction().add(R.id.steps_detail_container, stepDetailFragment).commit();
         }
     }
 
-    private ArrayList<DbStep> getStepsArrayList(final List<DbStep> steps) {
-        ArrayList<DbStep> items = new ArrayList<>();
-        for (DbStep item : items) {
-            items.add(item);
-        }
-        return items;
+    private ArrayList<Step> getStepsArrayList(final List<Step> steps) {
+        return new ArrayList<>(steps);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NotNull MenuItem item) {
         super.onOptionsItemSelected(item);
         recipeOptionsMenuPresenter.onOptionsItemSelected(this, item);
         return false;
@@ -170,7 +173,7 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     }
 
     @Override
-    public void updateSelectedStep(@NonNull DbStep step, int position) {
+    public void updateSelectedStep(@NonNull Step step, int position) {
         stepsPosition.setStepsPosition(position);
     }
 }

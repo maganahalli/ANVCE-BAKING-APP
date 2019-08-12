@@ -30,7 +30,7 @@ public class DbRecipe {
     private Integer iconResource = R.drawable.ic_yellow_cake;
 
     public DbRecipe(int recipeId, String name, String ingredientsListAsString, String stepsListAsString, Integer servings, String image) {
-        this.recipeId = id;
+        this.recipeId = recipeId;
         this.name = name;
         this.ingredientsListAsString = ingredientsListAsString;
         this.stepsListAsString = stepsListAsString;

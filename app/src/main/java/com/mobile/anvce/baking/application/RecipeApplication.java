@@ -8,11 +8,11 @@ import com.mobile.anvce.baking.components.DaggerApplicationComponent;
 
 public class RecipeApplication extends Application {
 
+    private ApplicationComponent applicationComponent;
+
     public static RecipeApplication get(Context context) {
         return (RecipeApplication) context.getApplicationContext();
     }
-
-    private ApplicationComponent applicationComponent;
 
     public ApplicationComponent getApplicationComponent() {
         return applicationComponent;

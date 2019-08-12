@@ -13,22 +13,18 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Step implements Parcelable {
 
-    public final static String PATTERN = "(^[0-9]+\\. )";
-    public final static Parcelable.Creator<Step> CREATOR = new Creator<Step>() {
-
-
-        @SuppressWarnings({
-                "unchecked"
-        })
+    public static final Creator<Step> CREATOR = new Creator<Step>() {
+        @Override
         public Step createFromParcel(Parcel in) {
             return new Step(in);
         }
 
+        @Override
         public Step[] newArray(int size) {
-            return (new Step[size]);
+            return new Step[size];
         }
-
     };
+    private final static String PATTERN = "(^[0-9]+\\. )";
     @SerializedName("id")
     @Expose
     private Integer id;
@@ -47,17 +43,17 @@ public class Step implements Parcelable {
     private Integer recipeId;
     private Integer stepId;
 
+    public Step() {
+    }
+
     protected Step(Parcel in) {
-        this.id = ((Integer) in.readValue((Integer.class.getClassLoader())));
+        this.id = ((Integer) in.readValue((Double.class.getClassLoader())));
         this.shortDescription = ((String) in.readValue((String.class.getClassLoader())));
         this.description = ((String) in.readValue((String.class.getClassLoader())));
         this.videoURL = ((String) in.readValue((String.class.getClassLoader())));
         this.thumbnailURL = ((String) in.readValue((String.class.getClassLoader())));
+        this.recipeId = ((Integer) in.readValue((Integer.class.getClassLoader())));
         this.stepId = ((Integer) in.readValue((Integer.class.getClassLoader())));
-        this.recipeId =((Integer) in.readValue((Integer.class.getClassLoader())));
-    }
-
-    public Step() {
     }
 
     public Integer getStepId() {
@@ -84,8 +80,8 @@ public class Step implements Parcelable {
         this.id = id;
     }
 
-    public Step withId(Integer id) {
-        this.id = id;
+    public Step withStepId(Integer id) {
+        this.stepId = id;
         return this;
     }
 
@@ -108,11 +104,6 @@ public class Step implements Parcelable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Step withDescription(String description) {
-        this.description = description;
-        return this;
     }
 
     public String getVideoURL() {
@@ -141,24 +132,26 @@ public class Step implements Parcelable {
         return this;
     }
 
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(id);
-        dest.writeValue(shortDescription);
-        dest.writeValue(description);
-        dest.writeValue(videoURL);
-        dest.writeValue(thumbnailURL);
-        dest.writeValue(recipeId);
-        dest.writeValue(stepId);
-    }
-
-    public int describeContents() {
-        return 0;
-    }
-
     public String getFormattedDescription() {
         return description.replaceFirst(PATTERN, "");
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeValue(id);
+        parcel.writeValue(shortDescription);
+        parcel.writeValue(description);
+        parcel.writeValue(videoURL);
+        parcel.writeValue(thumbnailURL);
+        parcel.writeValue(recipeId);
+        parcel.writeValue(stepId);
+
+    }
 }
 

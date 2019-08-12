@@ -13,10 +13,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.IngredientsListActivity"
+
+        <activity
+            android:name=".activities.IngredientsListActivity"
             android:label="@string/title_recipe_list"
-            android:theme="@style/AppTheme.NoActionBar"
-            ></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.MainBakingActivity"
             android:label="@string/app_name"
@@ -27,40 +28,33 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.StepDetailActivity"
             android:label="@string/title_activity_step_detail"
             android:parentActivityName=".activities.MainBakingActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mobile.anvce.baking.activities.MainBakingActivity" />
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <receiver android:name=".activities.StepDetailFragment$MediaReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
-
-        <receiver android:name=".widget.RecipeWidgetBroadcastReceiver"/>
-
+        <receiver android:name=".widget.RecipeWidgetBroadcastReceiver" />
         <receiver
             android:name=".widget.RecipeWidgetProvider"
             android:label="@string/baking_ingredients_widget">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-                <action android:name="me.indiandollar.apps.todoappcollectionwidget.app.ACTION_DATA_UPDATED"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
-                android:resource="@xml/baking_recipes_app_widget_info"/>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recipe_widget_provider_info" />
         </receiver>
 
-        <service android:name=".widget.RecipeWidgetRemoteViewsService"
-            android:permission="android.permission.BIND_REMOTEVIEWS"/>
-
-
+        <service
+            android:name=".widget.RecipeWidgetRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 
 </manifest>

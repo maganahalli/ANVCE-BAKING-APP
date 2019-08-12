@@ -20,12 +20,15 @@ import com.mobile.anvce.baking.callback.StepNavigation;
 import com.mobile.anvce.baking.callback.TwoPane;
 import com.mobile.anvce.baking.database.AppDatabase;
 import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.database.DbStep;
 import com.mobile.anvce.baking.enums.SortOrder;
 import com.mobile.anvce.baking.executors.AppExecutors;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Recipe;
+import com.mobile.anvce.baking.models.Step;
+import com.mobile.anvce.baking.transformers.DbRecipeFromRecipe;
 import com.mobile.anvce.baking.transformers.RecipeFromDbRecipe;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +40,7 @@ import butterknife.ButterKnife;
 
 public class IngredientsListActivity extends CommonActivity implements TwoPane, StepNavigation, BakingAppConstants {
 
-    final String TAG = this.getClass().getSimpleName();
+    private final String TAG = this.getClass().getSimpleName();
     @BindView(R.id.navigation)
     BottomNavigationView navigationView;
     @Inject
@@ -52,8 +55,9 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
     private boolean isShowIngredients = false;
     private int mRecipeId;
     private boolean mTwoPane;
-    private DbRecipe recipe = new DbRecipe();
+    private Recipe mRecipe = new Recipe();
     private AppDatabase recipeDataBase;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,42 +68,27 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
             // Restore value of members from saved state
             mRecipeId = savedInstanceState.getInt(RECIPE_ID, 1);
             isShowIngredients = savedInstanceState.getBoolean(SHOW_INGREDIENTS, false);
+            mRecipe = savedInstanceState.getParcelable(BakingAppConstants.RECIPE);
             Log.d(TAG, String.format("savedInstanceState != null, mRecipeId: %s isShowIngredients: %s", mRecipeId, isShowIngredients));
         } else {
             Intent intent = getIntent();
             mRecipeId = intent.getIntExtra(RECIPE_ID, 1);
+            mRecipe = intent.getParcelableExtra(BakingAppConstants.RECIPE);
             isShowIngredients = intent.getBooleanExtra(SHOW_INGREDIENTS, false);
             Log.d(TAG, String.format("savedInstanceState == null, mRecipeId: %s isShowIngredients: %s", mRecipeId, isShowIngredients));
         }
 
         recipeDataBase = AppDatabase.getInstance(this);
-        AppExecutors.getInstance().diskIO().execute(() -> {
-            final DbRecipe retrievedRecipe = recipeDataBase.receipeDao().retrieveRecipeById(mRecipeId);
-            assert retrievedRecipe != null;
-            Log.d(TAG, "Recipe Name:" + retrievedRecipe.getName() + "");
 
-            runOnUiThread(() -> {
-                if (retrievedRecipe != null) {
-                    recipe = retrievedRecipe;
-                    setContentView(R.layout.activity_ingredients_list);
-
-                    if (null == recipe) {
-                        return;
-                    }
-                    ButterKnife.bind(this);
-                    Log.d(TAG, "Binding done for " + retrievedRecipe.getName() + "");
-
-                    supportStartPostponedEnterTransition();
-                    if (navigationView == null) {
-                        navigationView = new BottomNavigationView(this);
-                    }
-                    navigationView.setOnNavigationItemSelectedListener(createOnNavigationItemSelectedListener());
-                    navigationView.setVisibility(getResources().getBoolean(R.bool.navBarVisible) ? View.VISIBLE : View.GONE);
-                    determineNavigation(savedInstanceState);
-
-                }
-            });
-        });
+        setContentView(R.layout.activity_ingredients_list);
+        ButterKnife.bind(this);
+        supportStartPostponedEnterTransition();
+        if (navigationView == null) {
+            navigationView = new BottomNavigationView(this);
+        }
+        navigationView.setOnNavigationItemSelectedListener(createOnNavigationItemSelectedListener());
+        navigationView.setVisibility(getResources().getBoolean(R.bool.navBarVisible) ? View.VISIBLE : View.GONE);
+        determineNavigation(savedInstanceState);
 
 
     }
@@ -112,14 +101,13 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-        populateToolbar(recipe);
-        final Recipe currentRecipe = new RecipeFromDbRecipe().transform(recipe);
+        populateToolbar(mRecipeId);
         if (stepsContainer != null) {
             Bundle args = new Bundle();
-            args.putParcelableArrayList(ARG_STEPS_ARRAY, currentRecipe.getSteps());
+            args.putParcelableArrayList(ARG_STEPS_ARRAY, mRecipe.getSteps());
             args.putInt(RECIPE_ID, mRecipeId);
             args.putBoolean(SHOW_INGREDIENTS, isShowIngredients);
-            args.putParcelable(RECIPE, currentRecipe);
+            args.putParcelable(RECIPE, mRecipe);
             RecipeStepFragment stepsFragment = new RecipeStepFragment();
             stepsFragment.setArguments(args);
             if (savedInstanceState == null) {
@@ -131,9 +119,10 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
         if (mTwoPane) {
             Bundle args = new Bundle();
             final int stepsAdapterPosition = stepsPosition.getStepsPosition();
-            args.putParcelable(STEP_EXTRA, recipe.getSteps().get(stepsAdapterPosition));
-            args.putParcelableArrayList(ARG_STEPS_ARRAY, currentRecipe.getSteps());
+            args.putParcelable(STEP_EXTRA, mRecipe.getSteps().get(stepsAdapterPosition));
+            args.putParcelableArrayList(ARG_STEPS_ARRAY, mRecipe.getSteps());
             args.putInt(RECIPE_ID, mRecipeId);
+            args.putParcelable(BakingAppConstants.RECIPE, mRecipe);
             StepDetailFragment stepDetailFragment = new StepDetailFragment();
             stepDetailFragment.setArguments(args);
             getSupportFragmentManager().beginTransaction()
@@ -148,10 +137,6 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
 
     }
 
-    public RecipeStepFragment getRecipeStepsFragment() {
-        return (RecipeStepFragment) getSupportFragmentManager().findFragmentByTag(STEPS_FRAGMENT_TAG);
-    }
-
     @Override
     public boolean isTwoPane() {
         return mTwoPane;
@@ -162,30 +147,30 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
         final int position = stepsPosition.getStepsPosition();
 
         AppExecutors.getInstance().diskIO().execute(() -> {
-            final List<DbStep> steps = recipeDataBase.receipeDao().retrieveStepByRecipeId(mRecipeId);
-            assert steps != null;
-            Log.d(TAG, " Number of steps :" + steps.size() + "");
-
+            final DbRecipe dbRecipe = recipeDataBase.receipeDao().retrieveRecipeById(mRecipeId);
             runOnUiThread(() -> {
-                if (!steps.isEmpty()) {
+                if (dbRecipe != null) {
+                    mRecipe = new RecipeFromDbRecipe().transform(dbRecipe);
+                    List<Step> steps = mRecipe.getSteps();
+                    Log.d(TAG, " Number of steps :" + steps.size() + "");
 
-                    final DbStep step = steps.get(position);
+                    final Step step = steps.get(position);
                     if (sort.isAscending()) {
-                        for (DbStep stepToNavigate : steps) {
+                        for (Step stepToNavigate : steps) {
                             if (stepToNavigate.getStepId() > step.getStepId()) {
                                 Log.d(TAG, String.format("new step: %s", stepToNavigate));
                                 updateSelectedStep(stepToNavigate, position);
-                                loadNewStep(stepToNavigate, recipe.getId(), steps);
+                                loadNewStep(stepToNavigate, mRecipe.getId(), steps);
                                 break;
                             }
                         }
                     } else {
                         for (int index = steps.size() - 1; index >= 0; index--) {
-                            DbStep stepToNavigate = steps.get(index);
+                            Step stepToNavigate = steps.get(index);
                             if (stepToNavigate.getStepId() < step.getStepId()) {
                                 Log.d(TAG, String.format("new step: %s", stepToNavigate));
                                 updateSelectedStep(stepToNavigate, index);
-                                loadNewStep(stepToNavigate, recipe.getId(), steps);
+                                loadNewStep(stepToNavigate, mRecipe.getId(), steps);
                                 break;
                             }
                         }
@@ -200,11 +185,11 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
     }
 
     @Override
-    public void loadNewStep(@NonNull DbStep step, int recipeId, @NonNull List<DbStep> steps) {
+    public void loadNewStep(@NonNull Step step, int recipeId, @NonNull List<Step> steps) {
 
         Bundle args = new Bundle();
         args.putParcelable(STEP_EXTRA, step);
-        final ArrayList<DbStep> stepsArray = getArraySteps(steps);
+        final ArrayList<Step> stepsArray = getArraySteps(steps);
         args.putParcelableArrayList(ARG_STEPS_ARRAY, stepsArray);
         args.putInt(RECIPE_ID, recipeId);
         if (mTwoPane) {
@@ -224,12 +209,8 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
         startActivity(intent);
     }
 
-    private ArrayList<DbStep> getArraySteps(List<DbStep> steps) {
-        ArrayList<DbStep> arraySteps = new ArrayList<>();
-        for (DbStep step : steps) {
-            arraySteps.add(step);
-        }
-        return arraySteps;
+    private ArrayList<Step> getArraySteps(List<Step> steps) {
+        return new ArrayList<>(steps);
     }
 
     @Override
@@ -237,19 +218,19 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
         final Menu menu = navigationView.getMenu();
         if (stepsPosition.getStepsPosition() == 0) {
             menu.removeItem(R.id.navigation_prev);
-        } else if (stepsPosition.getStepsPosition() == recipe.getSteps().size() - 1) {
+        } else if (stepsPosition.getStepsPosition() == mRecipe.getSteps().size() - 1) {
             menu.removeItem(R.id.navigation_next);
         }
 
     }
 
     @Override
-    public void updateSelectedStep(@NonNull DbStep step, int position) {
+    public void updateSelectedStep(@NonNull Step step, int position) {
         stepsPosition.setStepsPosition(position);
         getStepsFragment().highlightStep(step);
     }
 
-    public RecipeStepFragment getStepsFragment() {
+    protected RecipeStepFragment getStepsFragment() {
         return (RecipeStepFragment) getSupportFragmentManager().findFragmentByTag(STEPS_FRAGMENT_TAG);
     }
 
@@ -260,16 +241,17 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NotNull Bundle outState) {
         outState.putInt(RECIPE_ID, mRecipeId);
         final int stepsAdapterPosition = stepsPosition.getStepsPosition();
         outState.putInt(STEP_ID, stepsAdapterPosition);
         outState.putBoolean(SHOW_INGREDIENTS, isShowIngredients);
+        outState.putParcelable(BakingAppConstants.RECIPE, mRecipe);
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NotNull MenuItem item) {
         super.onOptionsItemSelected(item);
         recipeOptionsMenu.onOptionsItemSelected(this, item);
         return false;

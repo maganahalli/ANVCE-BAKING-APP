@@ -1,6 +1,8 @@
 package com.mobile.anvce.baking.api;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -12,17 +14,20 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mobile.anvce.baking.R;
 import com.mobile.anvce.baking.activities.MainBakingActivity;
 import com.mobile.anvce.baking.callback.StepNavigation;
-import com.mobile.anvce.baking.database.DbRecipe;
+import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
 import com.mobile.anvce.baking.enums.SortOrder;
-import com.mobile.anvce.baking.executors.AppExecutors;
+import com.mobile.anvce.baking.models.BakingAppConstants;
+import com.mobile.anvce.baking.models.Recipe;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.Context.MODE_PRIVATE;
+
 /**
  * Implementation of the RecipeOptionsMenu API
  */
-public class BaseRecipeOptionsMenu implements RecipeOptionsMenu {
+public class BaseRecipeOptionsMenu implements RecipeOptionsMenu, BakingAppConstants {
 
     private final IngredientsAndDescriptionIntent ingredientsAndDescriptionIntent;
     private final ResourceOverrides resourceOverrides;
@@ -77,23 +82,46 @@ public class BaseRecipeOptionsMenu implements RecipeOptionsMenu {
     @Override
     public void onPrepareOptionsMenu(@NonNull AppCompatActivity activity, @NonNull Menu menu) {
 
-        final RecipesFacade recipesFacade = new BaseRecipesFacade(activity);
-        List<DbRecipe> recipes = new ArrayList<>();
+        List<Recipe> recipes = restoreSharedPreference(activity);
+        menu.clear();
+        for (Recipe recipe : recipes) {
+            final int iconResource = resourceOverrides.getRecipeIconOverrideMap().get(recipe.getName());
+            menu.add(0, recipe.getId(), Menu.NONE, recipe.getName()).setIcon(iconResource);
+        }
+        /**
+         final RecipesFacade recipesFacade = new BaseRecipesFacade(activity);
+         List<DbRecipe> recipes = new ArrayList<>();
 
-        AppExecutors.getInstance().diskIO().execute(() -> {
-            final List<DbRecipe> recipeList = recipesFacade.fetchAllRecipes();
+         AppExecutors.getInstance().diskIO().execute(() -> {
+         final List<DbRecipe> recipeList = recipesFacade.fetchAllRecipes();
 
-            if (recipeList != null) {
-                menu.clear();
-                for (DbRecipe recipe : recipes) {
-                    final int iconResource = recipe.getIconResource() == 0
-                            ? resourceOverrides.getRecipeIconOverrideMap().get(recipe.getName()) : recipe.getIconResource();
-                    menu.add(0, recipe.getId(), Menu.NONE, recipe.getName()).setIcon(iconResource);
-                }
-                ActionBar actionBar = activity.getSupportActionBar();
-                actionBar.setDisplayHomeAsUpEnabled(false);
-            }
+         if (recipeList != null) {
+         menu.clear();
+         for (DbRecipe recipe : recipes) {
+         final int iconResource = recipe.getIconResource() == 0
+         ? resourceOverrides.getRecipeIconOverrideMap().get(recipe.getName()) : recipe.getIconResource();
+         menu.add(0, recipe.getId(), Menu.NONE, recipe.getName()).setIcon(iconResource);
+         }
 
-        });
+         }
+
+         });
+         */
+
+        ActionBar actionBar = activity.getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(false);
     }
+
+    // Restore preferences
+    private List<Recipe> restoreSharedPreference(@NonNull AppCompatActivity activity) {
+        SharedPreferences mPreferences = activity.getSharedPreferences(sharedPrefFile, MODE_PRIVATE);
+        String recipeListAsString = mPreferences.getString(RECIPE_LIST, "");
+        if (TextUtils.isEmpty(recipeListAsString)) {
+            return new ArrayList<>();
+        }
+
+        return new RecipeCustomDataConverter().toRecipeList(recipeListAsString);
+
+    }
+
 }

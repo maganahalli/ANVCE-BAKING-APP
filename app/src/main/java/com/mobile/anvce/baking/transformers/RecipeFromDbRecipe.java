@@ -1,12 +1,9 @@
 package com.mobile.anvce.baking.transformers;
 
-import com.mobile.anvce.baking.database.DbIngredient;
 import com.mobile.anvce.baking.database.DbRecipe;
 import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
 import com.mobile.anvce.baking.models.Recipe;
 import com.mobile.anvce.baking.populators.AnvcePopulatingTransformer;
-
-import java.util.List;
 
 /**
  * Transforms DbRecipe to Recipe.

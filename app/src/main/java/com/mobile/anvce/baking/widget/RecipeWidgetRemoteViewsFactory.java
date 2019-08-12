@@ -16,6 +16,7 @@ import com.mobile.anvce.baking.api.RecipesFacade;
 import com.mobile.anvce.baking.api.UiDisplayFormat;
 import com.mobile.anvce.baking.database.DbRecipe;
 import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
+import com.mobile.anvce.baking.executors.AppExecutors;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Ingredient;
 
@@ -85,13 +86,18 @@ public class RecipeWidgetRemoteViewsFactory implements RemoteViewsService.Remote
         final long identityToken = Binder.clearCallingIdentity();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         final int recipeId = prefs.getInt(PREFS_WIDGET_RECIPE_ID, 0);
-        DbRecipe recipe = recipesFacade.loadRecipe(recipeId);
-        ingredientDescriptions.clear();
-        List<Ingredient> ingredientList = new RecipeCustomDataConverter().toIngredientList(recipe.getIngredientsListAsString());
-        for (Ingredient ingredient : ingredientList) {
-            ingredientDescriptions.add(beautifier.formatIngredientForDisplay(ingredient));
-        }
-        Binder.restoreCallingIdentity(identityToken);
+
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            final DbRecipe recipe = recipesFacade.loadRecipe(recipeId);
+            if (recipe != null) {
+                ingredientDescriptions.clear();
+                for (Ingredient ingredient : recipe.getIngredients()) {
+                    ingredientDescriptions.add(beautifier.formatIngredientForDisplay(ingredient));
+                }
+                Binder.restoreCallingIdentity(identityToken);
+            }
+        });
+
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mobile.anvce.baking.models.Ingredient;
 import com.mobile.anvce.baking.models.Recipe;
-import com.mobile.anvce.baking.models.Step;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -38,6 +37,17 @@ public class RecipeCustomDataConverter implements Serializable {
     }
 
     @TypeConverter // note this annotation
+    public String fromRecipeList(List<Recipe> recipeList) {
+        if (recipeList == null) {
+            return (null);
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Recipe>>() {
+        }.getType();
+        return gson.toJson(recipeList, type);
+    }
+
+    @TypeConverter // note this annotation
     public List<Ingredient> toIngredientList(String ingredientString) {
         if (ingredientString == null) {
             return (null);
@@ -49,12 +59,12 @@ public class RecipeCustomDataConverter implements Serializable {
     }
 
     @TypeConverter // note this annotation
-    public ArrayList<Step> toStepsList(String stepsString) {
+    public ArrayList<com.mobile.anvce.baking.models.Step> toStepsList(String stepsString) {
         if (stepsString == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<Step>>() {
+        Type type = new TypeToken<ArrayList<com.mobile.anvce.baking.models.Step>>() {
         }.getType();
         return gson.fromJson(stepsString, type);
     }

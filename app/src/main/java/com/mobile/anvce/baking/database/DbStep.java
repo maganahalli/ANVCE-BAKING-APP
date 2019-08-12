@@ -7,8 +7,6 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import com.mobile.anvce.baking.models.Step;
-
 /**
  * Models Step for Retrofit2 library
  *
@@ -19,18 +17,18 @@ public class DbStep implements Parcelable {
 
     public final static String PATTERN = "(^[0-9]+\\. )";
     public final static Parcelable.Creator<DbStep> CREATOR = new Creator<DbStep>() {
-            @SuppressWarnings({
-                    "unchecked"
-            })
-            public DbStep createFromParcel(Parcel in) {
+        @SuppressWarnings({
+                "unchecked"
+        })
+        public DbStep createFromParcel(Parcel in) {
             return new DbStep(in);
         }
 
-            public DbStep[] newArray(int size) {
+        public DbStep[] newArray(int size) {
             return (new DbStep[size]);
         }
 
-        };
+    };
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -40,6 +38,7 @@ public class DbStep implements Parcelable {
     private String videoURL = "";
     private String thumbnailURL = "";
     private int recipeId;
+
     public DbStep(int stepId, String shortDescription, String description, String videoURL, String thumbnailURL, int recipeId) {
         this.stepId = stepId;
         this.shortDescription = shortDescription;
@@ -48,6 +47,7 @@ public class DbStep implements Parcelable {
         this.thumbnailURL = thumbnailURL;
         this.recipeId = recipeId;
     }
+
     @Ignore
     public DbStep() {
     }

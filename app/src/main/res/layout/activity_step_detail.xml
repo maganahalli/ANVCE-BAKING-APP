@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                tools:context="com.mobile.anvce.baking.activities.StepDetailActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    tools:context="com.mobile.anvce.baking.activities.StepDetailActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -12,10 +12,11 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <include layout="@layout/recipe_title_box"
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content"
-                 android:layout_centerInParent="true"/>
+        <include
+            layout="@layout/recipe_title_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
 
     </androidx.appcompat.widget.Toolbar>
 
@@ -24,9 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/navigation"
-        android:layout_alignParentTop="@bool/stepsContainerAlignParentTop"
         android:layout_below="@+id/toolbar"
-        android:layout_centerHorizontal="@bool/stepsContainerCenterInHorizontal"/>
+        android:layout_alignParentTop="@bool/stepsContainerAlignParentTop"
+        android:layout_centerHorizontal="@bool/stepsContainerCenterInHorizontal" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
@@ -34,6 +35,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="?android:attr/windowBackground"
-        app:menu="@menu/navigation"/>
+        app:menu="@menu/navigation" />
 
 </RelativeLayout>
