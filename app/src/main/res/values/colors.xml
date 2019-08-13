@@ -12,6 +12,7 @@
     <color name="black">#000000</color>
     <color name="secondary_text">#727272</color>
     <color name="transparent">#00000000</color>
+    <color name="indigo_dark">#000051</color>
 
     <color name="primary">#FFC107</color>
     <color name="primary_dark">#FFA000</color>

@@ -39,9 +39,8 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".widget.RecipeWidgetBroadcastReceiver" />
         <receiver
-            android:name=".widget.RecipeWidgetProvider"
+            android:name=".widget.RecipeWidget"
             android:label="@string/baking_ingredients_widget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -53,7 +52,7 @@
         </receiver>
 
         <service
-            android:name=".widget.RecipeWidgetRemoteViewsService"
+            android:name=".widget.ListWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 

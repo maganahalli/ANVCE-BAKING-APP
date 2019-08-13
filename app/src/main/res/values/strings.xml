@@ -45,5 +45,15 @@
     <string name="bottom_navigation_visibility">visible</string>
     <string name="bakingTime">Baking Time</string>
     <string name="add_widget">Add widget</string>
+    <string name="widget_empty_view_text">Click a recipe to display ingredients!</string>
+    <string name="widget_empty_content_description">Image displayed when the
+        desired recipe is empty</string>
+
+    <string name="pref_ingredient_list_key">pref_ingredient_list</string>
+    <string name="pref_recipe_name_key">pref_recipe_name</string>
+    <string name="pref_recipe_id_key">pref_recipe_id</string>
+    <string name="pref_step_list_key">pref_step_list</string>
+    <string name="pref_servings_key">pref_servings</string>
+    <string name="pref_image_key">pref_image</string>
 
 </resources>

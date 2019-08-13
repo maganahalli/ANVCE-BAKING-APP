@@ -7,6 +7,7 @@
     <dimen name="text_margin_half">4dp</dimen>
     <dimen name="text_size_widget">15sp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_margin_small">8dp</dimen>
 
     <dimen name="baking_widget_margin">8dp</dimen>
     <dimen name="baking_widget_minWidth">300dp</dimen>
@@ -15,6 +16,7 @@
     <dimen name="baking_widget_minResizeWidth">200dp</dimen>
     <dimen name="baking_widget_icon_dimension">100dp</dimen>
     <dimen name="step_item_min_height">72dp</dimen>
+    <dimen name="min_size_widget">40dp</dimen>
 
     <!--
 Refer to App Widget Documentation for margin information

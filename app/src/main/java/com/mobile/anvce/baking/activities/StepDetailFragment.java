@@ -252,7 +252,12 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
             }
         }
         releasePlayer();
-        unbinder.unbind();
+    }
+
+    private void unbind() {
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
@@ -260,7 +265,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        unbinder.unbind();
+        unbind();
     }
 
     @Override

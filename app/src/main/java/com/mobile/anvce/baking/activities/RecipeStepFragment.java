@@ -151,7 +151,13 @@ public class RecipeStepFragment extends Fragment implements BakingAppConstants {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        unbinder.unbind();
+        unbind();
+    }
+
+    private void unbind() {
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override

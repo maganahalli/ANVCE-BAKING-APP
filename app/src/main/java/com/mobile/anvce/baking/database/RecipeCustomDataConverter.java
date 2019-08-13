@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mobile.anvce.baking.models.Ingredient;
 import com.mobile.anvce.baking.models.Recipe;
+import com.mobile.anvce.baking.models.Step;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
@@ -24,6 +25,16 @@ public class RecipeCustomDataConverter implements Serializable {
         }.getType();
         return gson.toJson(ingredientList, type);
     }
+    @TypeConverter // note this annotation
+    public String fromIngredients(List<Ingredient> ingredientList) {
+        if (ingredientList == null) {
+            return (null);
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Ingredient>>() {
+        }.getType();
+        return gson.toJson(ingredientList, type);
+    }
 
     @TypeConverter // note this annotation
     public String fromStepsList(List<DbStep> stepsList) {
@@ -32,6 +43,17 @@ public class RecipeCustomDataConverter implements Serializable {
         }
         Gson gson = new Gson();
         Type type = new TypeToken<List<DbStep>>() {
+        }.getType();
+        return gson.toJson(stepsList, type);
+    }
+
+    @TypeConverter // note this annotation
+    public String fromSteps(List<Step> stepsList) {
+        if (stepsList == null) {
+            return (null);
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Step>>() {
         }.getType();
         return gson.toJson(stepsList, type);
     }
@@ -59,12 +81,12 @@ public class RecipeCustomDataConverter implements Serializable {
     }
 
     @TypeConverter // note this annotation
-    public ArrayList<com.mobile.anvce.baking.models.Step> toStepsList(String stepsString) {
+    public ArrayList<Step> toStepsList(String stepsString) {
         if (stepsString == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<com.mobile.anvce.baking.models.Step>>() {
+        Type type = new TypeToken<ArrayList<Step>>() {
         }.getType();
         return gson.fromJson(stepsString, type);
     }

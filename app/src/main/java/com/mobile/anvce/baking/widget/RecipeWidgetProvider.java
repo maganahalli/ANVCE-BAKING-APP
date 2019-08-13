@@ -44,6 +44,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider implements BakingApp
     static final RecipeWidget ingredientsWidgetApi = new BaseRecipeWidget();
     static final ResourceOverrides resourceOverridesApi = new BaseResourceOverrides();
 
+
     public static void handleActionViewIngredients(@NonNull final Context context) {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, RecipeWidgetProvider.class));
@@ -94,16 +95,17 @@ public class RecipeWidgetProvider extends AppWidgetProvider implements BakingApp
     }
 
     static void updateAppWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-
         final RecipesFacade recipesFacade = new BaseRecipesFacade(context);
+
         AppExecutors.getInstance().diskIO().execute(() -> {
             final List<DbRecipe> recipes = recipesFacade.fetchAllRecipes();
             assert recipes != null;
-            final DbRecipe recipe = recipesFacade.anyRecipe(recipes);
-            Log.d(TAG, "Retrieved recipies");
-            updateWidgets(context, appWidgetManager, appWidgetIds, recipe);
+            AppExecutors.getInstance().mainThread().execute(() -> {
+                final DbRecipe recipe = recipesFacade.anyRecipe(recipes);
+                Log.d(TAG, "Retrieved recipies");
+                updateWidgets(context, appWidgetManager, appWidgetIds, recipe);
+            });
         });
-
     }
 
     private static void updateWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds, DbRecipe recipe) {

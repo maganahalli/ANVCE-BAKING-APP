@@ -8,6 +8,7 @@ package com.mobile.anvce.baking.models;
 public interface BakingAppConstants {
 
     String ARG_STEPS_ARRAY = "steps_array";
+    String EXTRA_RECIPE ="EXTRA_RECIPE";
     String LIST_STATE_KEY = "LIST_STATE_KEY";
     String PREFS_WIDGET_RECIPE_ID = "PREFS_WIDGET_RECIPE_ID";
     String PREFS_WIDGET_RECIPE_INGREDIENTS = "PREFS_WIDGET_INGREDIENTS";
@@ -24,6 +25,11 @@ public interface BakingAppConstants {
     // Name of shared preferences file
     String sharedPrefFile =
             "com.mobile.anvce.movies.sharedprefs";
+    /** The default value for the SharedPreferences */
+     String DEFAULT_STRING = "";
+    int DEFAULT_INTEGER = 1;
+    int DEFAULT_INTEGER_FOR_SERVINGS = 8;
+    int WIDGET_PENDING_INTENT_ID =0;
 
 }
 

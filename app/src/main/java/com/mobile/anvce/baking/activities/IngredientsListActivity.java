@@ -1,7 +1,11 @@
 package com.mobile.anvce.baking.activities;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,18 +18,19 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.mobile.anvce.baking.R;
 import com.mobile.anvce.baking.api.RecipeOptionsMenu;
+import com.mobile.anvce.baking.api.RecipeWidget;
 import com.mobile.anvce.baking.api.StepsPosition;
 import com.mobile.anvce.baking.application.RecipeApplication;
 import com.mobile.anvce.baking.callback.StepNavigation;
 import com.mobile.anvce.baking.callback.TwoPane;
 import com.mobile.anvce.baking.database.AppDatabase;
 import com.mobile.anvce.baking.database.DbRecipe;
+import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
 import com.mobile.anvce.baking.enums.SortOrder;
 import com.mobile.anvce.baking.executors.AppExecutors;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Recipe;
 import com.mobile.anvce.baking.models.Step;
-import com.mobile.anvce.baking.transformers.DbRecipeFromRecipe;
 import com.mobile.anvce.baking.transformers.RecipeFromDbRecipe;
 
 import org.jetbrains.annotations.NotNull;
@@ -78,8 +83,9 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
             Log.d(TAG, String.format("savedInstanceState == null, mRecipeId: %s isShowIngredients: %s", mRecipeId, isShowIngredients));
         }
 
+        updateSharedPreference(mRecipe);
+        sendBroadcastToWidget();
         recipeDataBase = AppDatabase.getInstance(this);
-
         setContentView(R.layout.activity_ingredients_list);
         ButterKnife.bind(this);
         supportStartPostponedEnterTransition();
@@ -92,6 +98,53 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
 
 
     }
+
+    /**
+     * Updates the list of ingredients using SharedPreferences each time the user selects the recipe.
+     * <p>
+     * Reference @see "https://discussions.udacity.com/t/not-sure-how-to-approach-widget-building/728592"
+     */
+    private void updateSharedPreference(Recipe recipe) {
+        // Get a instance of SharedPreferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // Get the editor object
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        // Get the ingredient list and convert the list to string
+        String ingredientString = new RecipeCustomDataConverter().fromIngredients(recipe.getIngredients());
+
+        // Save the string used for displaying in the app widget
+        editor.putString(getString(R.string.pref_ingredient_list_key), ingredientString);
+        editor.putString(getString(R.string.pref_recipe_name_key), recipe.getName());
+
+        // Convert the list of the steps to String
+        String stepString = new RecipeCustomDataConverter().fromSteps(recipe.getSteps());
+
+        // Save the recipe data used for launching the DetailActivity
+        editor.putInt(getString(R.string.pref_recipe_id_key), recipe.getId());
+        editor.putString(getString(R.string.pref_step_list_key), stepString);
+        editor.putString(getString(R.string.pref_image_key), recipe.getImage());
+        editor.putInt(getString(R.string.pref_servings_key), recipe.getServings());
+
+        editor.apply();
+    }
+
+    /**
+     * Sends the update broadcast message to the app widget.
+     * <p>
+     * Reference: @see "https://stackoverflow.com/questions/10663800/sending-an-update-broadcast
+     * -to-an-app-widget"
+     */
+    private void sendBroadcastToWidget() {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(this, RecipeWidget.class));
+
+        Intent updateAppWidgetIntent = new Intent();
+        updateAppWidgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        updateAppWidgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
+        sendBroadcast(updateAppWidgetIntent);
+    }
+
 
     private void determineNavigation(Bundle savedInstanceState) {
         if (stepsDetailContainer != null) {

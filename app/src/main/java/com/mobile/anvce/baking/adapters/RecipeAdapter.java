@@ -1,7 +1,11 @@
 package com.mobile.anvce.baking.adapters;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +18,11 @@ import com.bumptech.glide.request.RequestOptions;
 import com.mobile.anvce.baking.R;
 import com.mobile.anvce.baking.activities.IngredientsListActivity;
 import com.mobile.anvce.baking.activities.MainBakingActivity;
+import com.mobile.anvce.baking.api.RecipeWidget;
 import com.mobile.anvce.baking.api.ResourceOverrides;
 import com.mobile.anvce.baking.api.UiDisplayFormat;
 import com.mobile.anvce.baking.application.RecipeApplication;
+import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Recipe;
 import com.mobile.anvce.baking.viewholders.RecipeViewHolder;
@@ -68,6 +74,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeViewHolder> implem
         });
 
     }
+
 
     @NonNull
     @Override
