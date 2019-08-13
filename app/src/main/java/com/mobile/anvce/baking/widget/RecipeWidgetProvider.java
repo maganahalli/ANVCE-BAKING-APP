@@ -1,148 +1,178 @@
 package com.mobile.anvce.baking.widget;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.TaskStackBuilder;
 
 import com.mobile.anvce.baking.R;
-import com.mobile.anvce.baking.api.BaseRecipeWidget;
-import com.mobile.anvce.baking.api.BaseRecipesFacade;
-import com.mobile.anvce.baking.api.BaseResourceOverrides;
-import com.mobile.anvce.baking.api.BaseUiDisplayFormat;
-import com.mobile.anvce.baking.api.RecipeWidget;
-import com.mobile.anvce.baking.api.RecipesFacade;
-import com.mobile.anvce.baking.api.ResourceOverrides;
-import com.mobile.anvce.baking.api.UiDisplayFormat;
-import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.executors.AppExecutors;
+import com.mobile.anvce.baking.activities.IngredientsListActivity;
+import com.mobile.anvce.baking.activities.MainBakingActivity;
+import com.mobile.anvce.baking.activities.StepDetailActivity;
+import com.mobile.anvce.baking.database.RecipeCustomDataConverter;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Ingredient;
+import com.mobile.anvce.baking.models.Recipe;
+import com.mobile.anvce.baking.models.Step;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
-/**
- * Created by Venkatesh Maganahalli
- */
 
 public class RecipeWidgetProvider extends AppWidgetProvider implements BakingAppConstants {
 
-    static final String TAG = RecipeWidgetProvider.class.getSimpleName();
-    static final RecipeWidget ingredientsWidgetApi = new BaseRecipeWidget();
-    static final ResourceOverrides resourceOverridesApi = new BaseResourceOverrides();
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+                                int appWidgetId) {
 
+        RemoteViews views = getIngredientListRemoteView(context, appWidgetId);
 
-    public static void handleActionViewIngredients(@NonNull final Context context) {
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, RecipeWidgetProvider.class));
-        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.recipe_name);
-        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widgetListView);
-        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.imageView);
-        updateAppWidgets(context, appWidgetManager, appWidgetIds);
+        // Instruct the widget manager to update the widget
+        appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    public static void sendRefreshBroadcast(Context context) {
-        Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        intent.setComponent(new ComponentName(context, RecipeWidgetProvider.class));
-        context.sendBroadcast(intent);
+    /**
+     * Update the recipe name in the app widget.
+     */
+    static void updateAppWidgetTitle(Context context, AppWidgetManager appWidgetManager,
+                                     int appWidgetId) {
+        RemoteViews views = getTitleRemoteView(context);
+
+        // Instruct the widget manager to update the widget
+        appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, DbRecipe recipe) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(PREFS_WIDGET_RECIPE_ID, recipe.getId());
-        final Set<String> ingredientItems = new HashSet<>();
-        final UiDisplayFormat formatterApi = new BaseUiDisplayFormat(context);
-        for (Ingredient ingredient : recipe.getIngredients()) {
-            ingredientItems.add(formatterApi.formatIngredientForDisplay(ingredient));
+    /**
+     * Creates and returns the RemoteViews to be displayed in the TextView widget
+     *
+     * @param context The context of the app
+     * @return The RemoteViews for displaying recipe name
+     */
+    private static RemoteViews getTitleRemoteView(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        // Get the recipe name used for displaying in the app widget
+        String recipeName = sharedPreferences.getString(
+                context.getString(R.string.pref_recipe_name_key), DEFAULT_STRING);
+
+        // Extract recipe data used for creating the recipe object
+        int recipeId = sharedPreferences.getInt(
+                context.getString(R.string.pref_recipe_id_key), DEFAULT_INTEGER);
+        String ingredientString = sharedPreferences.getString(
+                context.getString(R.string.pref_ingredient_list_key), DEFAULT_STRING);
+        String stepString = sharedPreferences.getString(
+                context.getString(R.string.pref_step_list_key), DEFAULT_STRING);
+        int servings = sharedPreferences.getInt(
+                context.getString(R.string.pref_servings_key), DEFAULT_INTEGER_FOR_SERVINGS);
+        String image = sharedPreferences.getString(
+                context.getString(R.string.pref_image_key), DEFAULT_STRING);
+
+        // Create an Intent to launch MainActivity or DetailActivity when clicked
+        Intent intent;
+
+        // Construct the RemoteViews object
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_list_view);
+
+        // If a user does not click the recipe item, there is no data to launch the DetailActivity.
+        // In this case, launch the MainActivity. Otherwise, launch the DetailActivity.
+        if (ingredientString.isEmpty() || stepString.isEmpty()) {
+            intent = new Intent(context, MainBakingActivity.class);
+            // Display the app name in the app widget
+            views.setTextViewText(R.id.widget_recipe_name, context.getString(R.string.app_name));
+        } else {
+            intent = new Intent(context, IngredientsListActivity.class);
+
+            // Convert ingredient string to the list of ingredients
+            RecipeCustomDataConverter converter = new RecipeCustomDataConverter();
+            List<Ingredient> ingredientList = converter.toIngredientList(ingredientString);
+            // Convert step string to the list of steps
+            List<Step> stepList = converter.toStepsList(stepString);
+            ArrayList<Step> steps = new ArrayList<>();
+            steps.addAll(stepList);
+
+            // Create the recipe that a user clicks
+            Recipe recipe = new Recipe();
+            recipe.setId(recipeId);
+            recipe.setIngredients(ingredientList);
+            recipe.setSteps(steps);
+            recipe.setServings(servings);
+            recipe.setImage(image);
+
+            // Pass the bundle through Intent
+            Bundle b = new Bundle();
+            b.putParcelable(EXTRA_RECIPE, recipe);
+            intent.putExtra(EXTRA_RECIPE, b);
+
+            // Display the recipe name in the app widget
+            views.setTextViewText(R.id.widget_recipe_name, recipeName);
         }
-        editor.putStringSet(PREFS_WIDGET_RECIPE_INGREDIENTS, ingredientItems);
-        editor.apply();
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.recipes_widget_provider);
-        final Intent widgetClickIntent = ingredientsWidgetApi.buildWidgetClickIntent(context, recipe);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, widgetClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        //Widgets allow click handlers to only launch pending intents
-        remoteViews.setOnClickPendingIntent(R.id.widgetLayout, pendingIntent);
-        remoteViews.setTextViewText(R.id.recipe_name, recipe.getName());
 
-        final int iconResource = recipe.getIconResource() == 0
-                ? resourceOverridesApi.getRecipeIconOverrideMap().get(recipe.getName()) : recipe.getIconResource();
-        remoteViews.setImageViewResource(R.id.imageView, iconResource);
+        // Widgets allow click handlers to only launch pending intents
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, WIDGET_PENDING_INTENT_ID,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.widget_recipe_name, pendingIntent);
 
-        Intent ingredientsIntent = new Intent(context, RecipeWidgetRemoteViewsService.class);
-        remoteViews.setRemoteAdapter(R.id.widgetListView, ingredientsIntent);
-
-        // template to handle the click listener for each item
-        PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
-                .addNextIntentWithParentStack(widgetClickIntent)
-                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        remoteViews.setPendingIntentTemplate(R.id.widgetListView, clickPendingIntentTemplate);
-
-        appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+        return views;
     }
 
-    static void updateAppWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        final RecipesFacade recipesFacade = new BaseRecipesFacade(context);
+    /**
+     * Creates and returns the RemoteViews to be displayed in the ListView mode widget
+     *
+     * @param context The context
+     * @return The RemoteViews for the ListView mode widget
+     */
+    private static RemoteViews getIngredientListRemoteView(Context context, int appWidgetId) {
+        // Construct the RemoteViews object
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_list_view);
 
-        AppExecutors.getInstance().diskIO().execute(() -> {
-            final List<DbRecipe> recipes = recipesFacade.fetchAllRecipes();
-            assert recipes != null;
-            AppExecutors.getInstance().mainThread().execute(() -> {
-                final DbRecipe recipe = recipesFacade.anyRecipe(recipes);
-                Log.d(TAG, "Retrieved recipies");
-                updateWidgets(context, appWidgetManager, appWidgetIds, recipe);
-            });
-        });
+        // Set up the intent that starts the ListWidgetService, which will provide the views for
+        // this collection
+        Intent intent = new Intent(context, ListWidgetService.class);
+        // Add the app widget Id to the intent extras
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        views.setRemoteAdapter(R.id.widget_list_view, intent);
+
+        // Handle empty view
+        views.setEmptyView(R.id.widget_list_view, R.id.widget_empty_view);
+        return views;
     }
 
-    private static void updateWidgets(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds, DbRecipe recipe) {
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId, recipe);
+            updateAppWidget(context, appWidgetManager, appWidgetId);
+            // Update the recipe name in the app widget
+            updateAppWidgetTitle(context, appWidgetManager, appWidgetId);
         }
     }
 
     @Override
-    public void onDisabled(Context context) {
-        Toast.makeText(context, "onDisabled():last widget instance removed", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(context, RecipeWidgetBroadcastReceiver.class);
-        PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent, 0);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(sender);
-        super.onDisabled(context);
-    }
+    public void onReceive(Context context, Intent intent) {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 
-    @Override
-    public void onEnabled(Context context) {
-        super.onEnabled(context);
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, RecipeWidgetBroadcastReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        //After after 3 seconds
-        am.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
-                60000, pi);
-    }
-
-    @Override
-    public void onReceive(final Context context, Intent intent) {
-        final String action = intent.getAction();
-        if (action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
-            // refresh all your widgets
-            handleActionViewIngredients(context);
+        String action = intent.getAction();
+        if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)) {
+            int[] appWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            for (int appWidgetId : appWidgetIds) {
+                updateAppWidget(context, appWidgetManager, appWidgetId);
+            }
+            // Trigger data update to handle the ListView widgets and force a data refresh
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list_view);
         }
         super.onReceive(context, intent);
     }
 
+    @Override
+    public void onEnabled(Context context) {
+        // Enter relevant functionality for when the first widget is created
+    }
+
+    @Override
+    public void onDisabled(Context context) {
+        // Enter relevant functionality for when the last widget is disabled
+    }
 }
+

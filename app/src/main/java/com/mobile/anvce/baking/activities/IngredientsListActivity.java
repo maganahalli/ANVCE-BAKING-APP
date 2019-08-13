@@ -83,6 +83,7 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
             Log.d(TAG, String.format("savedInstanceState == null, mRecipeId: %s isShowIngredients: %s", mRecipeId, isShowIngredients));
         }
 
+        buildRecipeData();
         updateSharedPreference(mRecipe);
         sendBroadcastToWidget();
         recipeDataBase = AppDatabase.getInstance(this);
@@ -99,12 +100,29 @@ public class IngredientsListActivity extends CommonActivity implements TwoPane, 
 
     }
 
+    private Recipe buildRecipeData() {
+        Intent intent = getIntent();
+        if (intent != null) {
+            if (intent.hasExtra(EXTRA_RECIPE)) {
+                // Receive the Recipe object which contains ID, name, ingredients, steps, servings,
+                // and image of the recipe
+                Bundle b = intent.getBundleExtra(EXTRA_RECIPE);
+                mRecipe = b.getParcelable(EXTRA_RECIPE);
+            }
+        }
+        return mRecipe;
+    }
+
+
     /**
      * Updates the list of ingredients using SharedPreferences each time the user selects the recipe.
      * <p>
      * Reference @see "https://discussions.udacity.com/t/not-sure-how-to-approach-widget-building/728592"
      */
     private void updateSharedPreference(Recipe recipe) {
+        if(recipe == null){
+            return;
+        }
         // Get a instance of SharedPreferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         // Get the editor object

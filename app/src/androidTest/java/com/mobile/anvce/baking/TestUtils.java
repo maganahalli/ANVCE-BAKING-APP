@@ -1,20 +1,20 @@
 package com.mobile.anvce.baking;
 
 import com.mobile.anvce.baking.database.AppDatabase;
-import com.mobile.anvce.baking.database.DbRecipe;
-import com.mobile.anvce.baking.executors.AppExecutors;
 import com.mobile.anvce.baking.models.Recipe;
-import com.mobile.anvce.baking.transformers.RecipeFromDbRecipe;
+import com.mobile.anvce.baking.utilities.RecipeDatabaseUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestUtils {
 
     public static final String TAG = TestUtils.class.getSimpleName();
     private static AppDatabase recipeDataBase;
-    public TestUtils(final AppDatabase recipeDataBase) {
+    private static RecipeDatabaseUtil recipeDatabaseUtil;
+
+    public TestUtils(final AppDatabase recipeDataBase, final RecipeDatabaseUtil recipeDatabaseUtil) {
         this.recipeDataBase = recipeDataBase;
+        this.recipeDatabaseUtil = recipeDatabaseUtil;
     }
 
     public static Recipe getRecipeByPosition(final int position) {
@@ -24,20 +24,7 @@ public class TestUtils {
     }
 
     private static List<Recipe> loadRecipes() {
-        final List<Recipe> recipes = new ArrayList<>();
-
-        AppExecutors.getInstance().diskIO().execute(() -> {
-            final List<DbRecipe> recipeList = recipeDataBase.receipeDao().fetchAllRecipes();
-            if (recipeList != null) {
-                for (DbRecipe dRecipe : recipeList) {
-                    Recipe recipe = new RecipeFromDbRecipe().transform(dRecipe);
-                    recipes.add(recipe);
-                }
-            }
-        });
-
-        return recipes;
-
+        return recipeDatabaseUtil.extractRecipeList("");
     }
 
 }

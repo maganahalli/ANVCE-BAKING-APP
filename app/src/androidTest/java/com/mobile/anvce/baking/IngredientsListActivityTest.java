@@ -11,6 +11,7 @@ import com.mobile.anvce.baking.database.AppDatabase;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Recipe;
 import com.mobile.anvce.baking.models.Step;
+import com.mobile.anvce.baking.utilities.RecipeDatabaseUtil;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,11 +42,14 @@ public class IngredientsListActivityTest implements BakingAppConstants {
                     Context targetContext = InstrumentationRegistry.getInstrumentation()
                             .getTargetContext();
                     final AppDatabase recipeDataBase = AppDatabase.getInstance(targetContext);
+                    final RecipeDatabaseUtil recipeDatabaseUtil = new RecipeDatabaseUtil(targetContext, recipeDataBase);
 
-                    new TestUtils(recipeDataBase);
+                    new TestUtils(recipeDataBase, recipeDatabaseUtil);
                     recipe = TestUtils.getRecipeByPosition(RECIPE_POSITION);
+                    recipe.setId(1);
                     Intent result = new Intent(targetContext, IngredientsListActivity.class);
                     result.putExtra(RECIPE_ID, recipe.getId());
+                    result.putExtra(BakingAppConstants.RECIPE, recipe);
                     return result;
                 }
             };

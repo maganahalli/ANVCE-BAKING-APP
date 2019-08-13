@@ -6,8 +6,10 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener;
@@ -16,6 +18,7 @@ import com.mobile.anvce.baking.api.RecipeOptionsMenu;
 import com.mobile.anvce.baking.api.StepsPosition;
 import com.mobile.anvce.baking.application.RecipeApplication;
 import com.mobile.anvce.baking.callback.StepNavigation;
+import com.mobile.anvce.baking.callback.TwoPane;
 import com.mobile.anvce.baking.enums.SortOrder;
 import com.mobile.anvce.baking.models.BakingAppConstants;
 import com.mobile.anvce.baking.models.Recipe;
@@ -34,7 +37,7 @@ import butterknife.ButterKnife;
 /**
  * Activity displaying the step detail
  */
-public class StepDetailActivity extends CommonActivity implements StepNavigation, BakingAppConstants {
+public class StepDetailActivity extends CommonActivity implements TwoPane,StepNavigation, BakingAppConstants {
 
     private final String TAG = this.getClass().getSimpleName();
     @BindView(R.id.navigation)
@@ -43,10 +46,15 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     RecipeOptionsMenu recipeOptionsMenuPresenter;
     @Inject
     StepsPosition stepsPosition;
+    @BindView(R.id.steps_detail_container)
+    @Nullable
+    View stepsDetailContainer;
+
     private int recipeId;
     private Step step = new Step();
     private final List<Step> steps;
     private Recipe mRecipe;
+    private boolean mTwoPane;
 
     public StepDetailActivity() {
         steps = new ArrayList<>();
@@ -127,17 +135,27 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
         step = getIntent().getParcelableExtra(STEP_EXTRA);
         recipeId = getIntent().getIntExtra(RECIPE_ID, 1);
         mRecipe = getIntent().getParcelableExtra(BakingAppConstants.RECIPE);
+        if (mRecipe == null) {
+            buildRecipeData();
+        }
         final ArrayList<Parcelable> items = getIntent().getParcelableArrayListExtra(ARG_STEPS_ARRAY);
         steps.clear();
-        assert items != null;
-        for (Parcelable item : items) {
-            if (item instanceof Step) {
-                steps.add((Step) item);
-            }
+        buildSteps(items);
+        if(stepsDetailContainer != null){
+            mTwoPane =true;
         }
         navigationView.setOnNavigationItemSelectedListener(createOnNavigationItemSelectedListener());
         populateToolbar(recipeId);
         if (savedInstanceState == null) {
+
+            if (step == null) {
+                step = mRecipe.getSteps().get(0);
+            }
+
+            if (steps.isEmpty()) {
+                steps.addAll(mRecipe.getSteps());
+            }
+
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
@@ -148,6 +166,31 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
             StepDetailFragment stepDetailFragment = new StepDetailFragment();
             stepDetailFragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction().add(R.id.steps_detail_container, stepDetailFragment).commit();
+        }
+    }
+
+
+    private Recipe buildRecipeData() {
+        Intent intent = getIntent();
+        if (intent != null) {
+            if (intent.hasExtra(EXTRA_RECIPE)) {
+                // Receive the Recipe object which contains ID, name, ingredients, steps, servings,
+                // and image of the recipe
+                Bundle b = intent.getBundleExtra(EXTRA_RECIPE);
+                mRecipe = b.getParcelable(EXTRA_RECIPE);
+            }
+        }
+        return mRecipe;
+    }
+
+    private void buildSteps(ArrayList<Parcelable> items) {
+        if (items == null) {
+            return;
+        }
+        for (Parcelable item : items) {
+            if (item != null && item instanceof Step) {
+                steps.add((Step) item);
+            }
         }
     }
 
@@ -175,6 +218,11 @@ public class StepDetailActivity extends CommonActivity implements StepNavigation
     @Override
     public void updateSelectedStep(@NonNull Step step, int position) {
         stepsPosition.setStepsPosition(position);
+    }
+
+    @Override
+    public boolean isTwoPane() {
+        return mTwoPane;
     }
 }
 
